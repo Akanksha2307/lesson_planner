@@ -5,6 +5,9 @@ import { Plan, PlanItem, PLAN_STATUS, LESSON_STATUS } from '../src/modules/plans
 import { createPlan } from '../src/modules/plans/plans.service.js';
 import { suggestLesson } from '../src/modules/plans/plans.engine.js';
 import { addDays, startOfWeek, todayISO } from '../src/common/dates.js';
+import { Notification } from '../src/modules/notifications/notifications.model.js';
+import { TopicLesson } from '../src/modules/library/library.model.js';
+import { saveApprovedPlan } from '../src/modules/library/library.service.js';
 import { Syllabus } from '../src/modules/syllabus/syllabus.model.js';
 import {
   Department,
@@ -141,12 +144,34 @@ async function seedDemoPlans(schoolId, data) {
   const { APPROVED, SUBMITTED, RETURNED } = PLAN_STATUS;
   const p1 = await make('t1', 'c8', 's8a', 'sci', lastWeek, APPROVED);
   await markPast(p1, 3);
-  await markPast(await make('t1', 'c8', 's8a', 'sci', thisWeek, APPROVED));
+  const p2 = await make('t1', 'c8', 's8a', 'sci', thisWeek, APPROVED);
+  await markPast(p2);
   await markPast(await make('t1', 'c8', 's8b', 'sci', thisWeek, APPROVED));
   await make('t1', 'c8', 's8b', 'sci', nextWeek, SUBMITTED);
-  await make('t1', 'c7', 's7a', 'sci', nextWeek, RETURNED, 'Please add a hands-on activity for Photosynthesis (leaf starch test).');
+  const p5 = await make('t1', 'c7', 's7a', 'sci', nextWeek, RETURNED, 'Please add a hands-on activity for Photosynthesis (leaf starch test).');
   await markPast(await make('t2', 'c8', 's8a', 'math', thisWeek, APPROVED), 2, LESSON_STATUS.NOT_DONE);
   await make('t2', 'c8', 's8a', 'math', nextWeek, SUBMITTED);
   await markPast(await make('t2', 'c8', 's8b', 'math', thisWeek, APPROVED));
+
+  // Lesson library: the lessons of every approved plan
+  await TopicLesson.deleteMany({ schoolId });
+  for (const plan of await Plan.find({ schoolId, status: APPROVED })) {
+    await saveApprovedPlan(schoolId, plan.id, 't3', threeDaysAgo);
+  }
+
+  // The same bell notifications as the frontend mock
+  await Notification.deleteMany({ schoolId });
+  const ago = (hours) => new Date(Date.now() - hours * 3600e3);
+  await Notification.insertMany(
+    [
+      { to: 't1', title: 'Plan sent back', text: 'Anitha Rao sent back your Class 7-A Science plan. See her comment.', link: `/lesson-planner/plans/${p5.id}`, at: ago(1) },
+      { to: 't1', title: 'Plan approved', text: 'Your Class 8-A Science plan for this week was approved.', link: `/lesson-planner/plans/${p2.id}`, at: ago(24) },
+      { to: 't1', title: 'Reminder', text: "Submit next week's plans by Saturday.", link: '/lesson-planner/plans', at: ago(48), read: true },
+      { to: 't3', title: 'New plan to review', text: 'Priya Sharma submitted Class 8-B Science for next week.', link: '/lesson-planner/approvals', at: ago(2) },
+      { to: 't3', title: 'New plan to review', text: 'Ravi Kumar submitted Class 8-A Mathematics for next week.', link: '/lesson-planner/approvals', at: ago(2.5) },
+      { to: 'p1', title: 'Weekly report ready', text: 'Syllabus coverage report for last week is ready.', link: '/lesson-planner/reports', at: ago(24) },
+      { to: 'a1', title: 'Syllabus missing', text: 'Class 7 Mathematics has no syllabus yet.', link: '/lesson-planner/syllabus', at: ago(24) },
+    ].map((n) => ({ ...n, schoolId })),
+  );
   return Plan.countDocuments({ schoolId });
 }

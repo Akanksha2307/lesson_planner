@@ -1,3 +1,4 @@
+import { Syllabus } from './syllabus.model.js';
 import { PlanItem } from '../plans/plans.model.js';
 import { newId } from '../../common/ids.js';
 import { badRequest, conflict, notFound } from '../../common/response.js';

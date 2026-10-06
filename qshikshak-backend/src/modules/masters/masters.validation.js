@@ -12,6 +12,7 @@ export const settingsBody = z
     skipExams: z.boolean(),
     whatsappHomework: z.boolean(),
     editAfterApproval: z.enum(['reapprove', 'allow']),
+    principalAfterDays: z.number().int().min(0).max(30),
   })
   .partial();
 

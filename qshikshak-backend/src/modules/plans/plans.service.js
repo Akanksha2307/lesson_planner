@@ -12,7 +12,7 @@ const LIVE = (s) => s !== LESSON_STATUS.RESCHEDULED && s !== LESSON_STATUS.CANCE
 const MAX_PLAN_DAYS = 200;
 
 // ---------- school lookups (names, periods, settings) ----------
-async function loadSchool(schoolId) {
+export async function loadSchool(schoolId) {
   const [classes, sections, subjects, staff, settings] = await Promise.all([
     SchoolClass.find({ schoolId }),
     Section.find({ schoolId }),
@@ -39,7 +39,7 @@ async function loadSchool(schoolId) {
 }
 
 // Lesson + the names the screens show (same fields as the mock's enrich())
-function enrich(item, sch, planStatus) {
+export function enrich(item, sch, planStatus) {
   const it = typeof item.toJSON === 'function' ? item.toJSON() : item;
   const p = sch.period(it.periodId);
   return {

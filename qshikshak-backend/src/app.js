@@ -8,8 +8,11 @@ import { config } from './config/index.js';
 import { authenticate } from './common/auth.js';
 import { errorHandler, notFoundRoute } from './common/errorHandler.js';
 import authRoutes from './modules/auth/auth.routes.js';
+import libraryRoutes from './modules/library/library.routes.js';
 import mastersRoutes from './modules/masters/masters.routes.js';
+import notificationsRoutes from './modules/notifications/notifications.routes.js';
 import plansRoutes from './modules/plans/plans.routes.js';
+import approvalsRoutes from './modules/approvals/approvals.routes.js';
 import syllabusRoutes from './modules/syllabus/syllabus.routes.js';
 
 export function createApp() {
@@ -38,7 +41,9 @@ export function createApp() {
   lessonPlanner.use(mastersRoutes);
   lessonPlanner.use(syllabusRoutes);
   lessonPlanner.use(plansRoutes);
-  // next: approvals, notifications
+  lessonPlanner.use(approvalsRoutes);
+  lessonPlanner.use(notificationsRoutes);
+  lessonPlanner.use(libraryRoutes);
   app.use('/api/lesson-planner', lessonPlanner);
 
   app.use(notFoundRoute);

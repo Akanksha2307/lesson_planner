@@ -74,6 +74,8 @@ const settingsSchema = new Schema(
     skipExams: { type: Boolean, default: true },
     whatsappHomework: { type: Boolean, default: false },
     editAfterApproval: { type: String, enum: ['reapprove', 'allow'], default: 'reapprove' },
+    // The principal may review a plan the HOD has not reviewed after this many days
+    principalAfterDays: { type: Number, default: 2, min: 0, max: 30 },
     // [{ id, type: 'period' | 'break' | 'assembly' | 'study', label, start, end }]
     bellSchedule: { type: [Schema.Types.Mixed], default: [] },
   },
