@@ -1,6 +1,7 @@
-import { Syllabus } from './syllabus.model.js';
+import { PlanItem } from '../plans/plans.model.js';
 import { newId } from '../../common/ids.js';
 import { badRequest, conflict, notFound } from '../../common/response.js';
+
 
 const key = (s) => String(s || '').trim().toLowerCase();
 
@@ -41,9 +42,27 @@ function normalise(chapters, previous, user) {
     };
   });
 }
+// A topic that lesson plans already use cannot be removed (the lessons would point at nothing).
+async function assertUsedTopicsKept(existing, chapters) {
+  const keep = new Set(chapters.flatMap((c) => c.topics.map((t) => t._id)));
+  const removed = existing.chapters.flatMap((c) => c.topics).filter((t) => !keep.has(t._id));
+  if (!removed.length) return;
+  const used = await PlanItem.find(
+    { schoolId: existing.schoolId, topicId: { $in: removed.map((t) => t._id) } },
+    { topicId: 1 },
+  ).lean();
+  const usedIds = new Set(used.map((u) => u.topicId));
+  const names = removed.filter((t) => usedIds.has(t._id)).map((t) => `"${t.title}"`);
+  if (names.length) {
+    throw conflict(
+      `${names.slice(0, 3).join(', ')}${names.length > 3 ? ' and others' : ''} already used in lesson plans, so cannot be removed. Rename the topic instead.`,
+    );
+  }
+}
 
 // Saves only if nobody else saved in between (version check)
 async function writeChapters(existing, chapters, user) {
+  await assertUsedTopicsKept(existing, chapters);
   const updated = await Syllabus.findOneAndUpdate(
     { _id: existing._id, version: existing.version },
     { $set: { chapters, updatedBy: user.id }, $inc: { version: 1 } },

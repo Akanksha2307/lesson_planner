@@ -1,3 +1,4 @@
+// Builds the Express app (no network / database here, so tests can import it).
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -8,6 +9,7 @@ import { authenticate } from './common/auth.js';
 import { errorHandler, notFoundRoute } from './common/errorHandler.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import mastersRoutes from './modules/masters/masters.routes.js';
+import plansRoutes from './modules/plans/plans.routes.js';
 import syllabusRoutes from './modules/syllabus/syllabus.routes.js';
 
 export function createApp() {
@@ -35,7 +37,8 @@ export function createApp() {
   lessonPlanner.use(authenticate);
   lessonPlanner.use(mastersRoutes);
   lessonPlanner.use(syllabusRoutes);
-  // later: plans, approvals, notifications
+  lessonPlanner.use(plansRoutes);
+  // next: approvals, notifications
   app.use('/api/lesson-planner', lessonPlanner);
 
   app.use(notFoundRoute);
