@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, Check, Menu, User } from 'lucide-react';
+import { ArrowLeft, Bell, Check, LogOut, Menu, User } from 'lucide-react';
 
 import { useApp } from '@/context/AppContext';
-import { lessonPlannerApi } from '@/services/lessonPlannerApi';
+import { lessonPlannerApi, USE_MOCK } from '@/services/lessonPlannerApi';
 import {
   extraTitles,
   LP_BASE,
@@ -61,6 +61,7 @@ export default function Topbar({ onMenu }) {
     user,
     notifications,
     setNotifications,
+    logout,
   } = useApp();
 
   const { pathname } = useLocation();
@@ -203,7 +204,7 @@ export default function Topbar({ onMenu }) {
           >
             <Bell size={19} />
 
-                        {unread > 0 && (
+            {unread > 0 && (
               <span className="bell-count" aria-hidden="true">
                 {unread > 9 ? '9+' : unread}
               </span>
@@ -309,48 +310,75 @@ export default function Topbar({ onMenu }) {
                 </div>
               </div>
 
-              <h4
-                className="faint"
-                style={{
-                  fontWeight: 500,
-                }}
-              >
-                View as (demo)
-              </h4>
-
-              {Object.entries(
-                ROLE_LABELS
-              ).map(([k, label]) => (
-                <button
-                  key={k}
-                  className={`pop-item ${
-                    role === k
-                      ? 'selected'
-                      : ''
-                  }`}
-                  onClick={() => {
-                    setRole(k);
-
-                    profile.setOpen(
-                      false
-                    );
-
-                    navigate(LP_BASE);
+              {/* Demo only: with the real backend your role comes from your login */}
+              {USE_MOCK && (
+                <h4
+                  className="faint"
+                  style={{
+                    fontWeight: 500,
                   }}
                 >
-                  <span
-                    style={{
-                      flex: 1,
+                  View as (demo)
+                </h4>
+              )}
+
+              {USE_MOCK &&
+                Object.entries(
+                  ROLE_LABELS
+                ).map(([k, label]) => (
+                  <button
+                    key={k}
+                    className={`pop-item ${
+                      role === k
+                        ? 'selected'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      setRole(k);
+
+                      profile.setOpen(
+                        false
+                      );
+
+                      navigate(LP_BASE);
                     }}
                   >
-                    {label}
-                  </span>
+                    <span
+                      style={{
+                        flex: 1,
+                      }}
+                    >
+                      {label}
+                    </span>
 
-                  {role === k && (
-                    <Check size={16} />
-                  )}
+                    {role === k && (
+                      <Check size={16} />
+                    )}
+                  </button>
+                ))}
+
+              {/* Log out */}
+              <div
+                style={{
+                  borderTop: '1px solid var(--line)',
+                  marginTop: 6,
+                  paddingTop: 6,
+                }}
+              >
+                <button
+                  className="pop-item"
+                  onClick={() => {
+                    profile.setOpen(false);
+                    logout();
+                    navigate('/login', { replace: true });
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span style={{ flex: 1 }}>
+                    Log out
+                  </span>
                 </button>
-              ))}
+              </div>
             </div>
           )}
         </div>

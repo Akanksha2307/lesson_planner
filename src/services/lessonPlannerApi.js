@@ -12,6 +12,8 @@ const pick =
     USE_MOCK ? mockFn(...args) : realFn(...args);
 
 export const lessonPlannerApi = {
+    // Login → { token, user }
+  login: pick(mock.login, (body) => http.post('/auth/login', body)),
   // Masters (classes, sections, subjects, staff, timetable, holidays, exams, templates, settings)
   getMasters: pick(mock.getMasters, () => http.get(`${base}/masters`)),
 

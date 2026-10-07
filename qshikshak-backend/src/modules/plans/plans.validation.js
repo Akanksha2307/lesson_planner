@@ -8,8 +8,10 @@ const isoDate = (what) =>
 const id = (what) => z.string({ error: `${what} is required` }).trim().min(1, `${what} is required`).max(100);
 
 // GET /plans?status=submitted
+// The "All" tab sends status= (empty) → no filter
+const emptyToUndefined = (v) => (v === '' || v === 'all' ? undefined : v);
 export const listQuery = z.object({
-  status: z.enum(['draft', 'submitted', 'approved', 'returned']).optional(),
+  status: z.preprocess(emptyToUndefined, z.enum(['draft', 'submitted', 'approved', 'returned']).optional()),
   teacherId: z.string().optional(),
 });
 

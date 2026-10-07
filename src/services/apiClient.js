@@ -1,4 +1,6 @@
+import { clearSession } from './session';
 import axios from 'axios';
+
 
 // Context from the top bar (school · academic year · board) is sent on every request
 let context = { school: '', year: '', board: '' };
@@ -25,6 +27,11 @@ http.interceptors.response.use(
   (res) => res.data,
   (err) => {
     const message = err.response?.data?.message || 'Could not reach the server. Check your connection and try again.';
+        // Session expired / not logged in → back to the login page (not for the login call itself)
+    if (err.response?.status === 401 && !err.config?.url?.includes('/auth/login')) {
+      clearSession();
+      if (!window.location.pathname.startsWith('/login')) window.location.assign('/login?expired=1');
+    }
     return Promise.reject(Object.assign(new Error(message), { response: err.response }));
   },
 );

@@ -1,5 +1,6 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import LessonPlannerHome from '@/pages/lesson-planner/LessonPlannerHome';
+import LoginPage from '@/pages/LoginPage';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useApp } from '@/context/AppContext';
 import {
@@ -41,7 +42,12 @@ const pages = {
   'master-data': MasterDataPage,
   'lesson-information': LessonInfoPage,
 };
-
+// Not logged in → the login page (it comes back to the page they asked for afterwards)
+function RequireLogin({ children }) {
+  const { isLoggedIn } = useApp();
+  const location = useLocation();
+  return isLoggedIn ? children : <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+}
 // Sends users to their landing page if their role can't open this page
 function Guard({ path, roles, children }) {
   const { role } = useApp();
@@ -62,8 +68,16 @@ function Guard({ path, roles, children }) {
 export default function AppRoutes() {
   
   return (
-    <Routes>
-      <Route path={LP_BASE} element={<DashboardLayout />}>
+        <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path={LP_BASE}
+        element={
+          <RequireLogin>
+            <DashboardLayout />
+          </RequireLogin>
+        }
+      >
         <Route
   index
   element={<LessonPlannerHome />}

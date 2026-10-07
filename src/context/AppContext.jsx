@@ -1,40 +1,55 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { lessonPlannerApi } from '@/services/lessonPlannerApi';
+import { lessonPlannerApi, USE_MOCK } from '@/services/lessonPlannerApi';
 import { setApiContext } from '@/services/apiClient';
+import { clearSession, getSession, saveSession } from '@/services/session';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   // Top bar context – in Qshikshak these come from the existing chips
   const [ctx] = useState({ school: 'one', year: '2024-2025', board: 'SSC' });
-  // Demo role switch – in production the role comes from the logged-in user
-  const [role, setRole] = useState(() => localStorage.getItem('lp-role') || 'teacher');
+  // Logged-in person ({ token, user }) – null until they log in on /login
+  const [session, setSession] = useState(() => getSession());
+  // Role: from the login. In mock mode the "View as (demo)" switch can still change it.
+  const [role, setRole] = useState(() => getSession()?.user.role || 'teacher');
   const [masters, setMasters] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
-  useEffect(() => {
-    setApiContext(ctx);
-  }, [ctx]);
-  useEffect(() => {
-    try {
-      localStorage.setItem('lp-role', role);
-    } catch {
-      /* ignore */
-    }
-  }, [role]);
+  // Set before the first render so the login request already carries the school id
+  setApiContext(ctx);
+
+  const login = useCallback(async (username, password) => {
+    const res = await lessonPlannerApi.login({ username, password });
+    saveSession(res.data);
+    setSession(res.data);
+    setRole(res.data.user.role);
+    return res.data.user;
+  }, []);
+
+  const logout = useCallback(() => {
+    clearSession();
+    setSession(null);
+    setMasters(null);
+    setNotifications([]);
+  }, []);
 
   const loadMasters = useCallback(async () => {
     const res = await lessonPlannerApi.getMasters();
     setMasters(res.data);
   }, []);
   useEffect(() => {
-    loadMasters();
-  }, [loadMasters]);
+    // An expired login answers 401 – apiClient then sends the browser to /login
+    if (session) loadMasters().catch(() => {});
+  }, [session, loadMasters]);
 
   const user = useMemo(() => {
-    if (!masters) return null;
+    if (!masters || !session) return null;
+    // Real backend: always the person who logged in. Mock: whoever "View as" points to.
+    if (!USE_MOCK || role === session.user.role) {
+      return masters.staff.find((s) => s.id === session.user.id) || session.user;
+    }
     return masters.staff.find((s) => s.id === masters.usersByRole[role]);
-  }, [masters, role]);
+  }, [masters, role, session]);
 
   const loadNotifications = useCallback(async () => {
     if (!user) return;
@@ -42,7 +57,7 @@ export function AppProvider({ children }) {
     setNotifications(res.data);
   }, [user]);
   useEffect(() => {
-    loadNotifications();
+    loadNotifications().catch(() => {});
   }, [loadNotifications]);
 
   // Lookup helpers used across pages
@@ -78,6 +93,10 @@ export function AppProvider({ children }) {
 
   const value = {
     ctx,
+    session,
+    isLoggedIn: Boolean(session),
+    login,
+    logout,
     role,
     setRole,
     user,
