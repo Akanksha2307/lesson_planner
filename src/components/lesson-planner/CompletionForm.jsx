@@ -89,7 +89,7 @@ export default function CompletionForm({ open, item, initialStatus, onClose, onD
         );
       if (data.continuedTo)
         toast(
-          `“${item.topicTitle}” continues on ${fmt(data.continuedTo.date, { weekday: 'short', day: 'numeric', month: 'short' })}, ${data.continuedTo.periodLabel}. You can drag it to another period in the Calendar.`,
+          `“${item.topicTitle}” continues on ${fmt(data.continuedTo.date, { weekday: 'short', day: 'numeric', month: 'short' })}, ${data.continuedTo.periodLabel}. You can drag it to another period in the Timetable.`,
           'info',
         );
       if (data.overflow)

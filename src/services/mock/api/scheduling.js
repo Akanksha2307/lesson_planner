@@ -40,7 +40,8 @@ export function continueCore(s, it, { date, periodId }) {
     throw new Error('Only a partly done or not done lesson can be continued.');
   if (sortItems({ date, periodId }, it) <= 0)
     throw new Error('Drop the lesson on a period after the one it was taught in.');
-  if (date < todayISO()) throw new Error('That day is already over. Choose today or a later day.');
+  if (periodHasStarted(date, periodId))
+    throw new Error('That period has already started or is over. Choose a later period.');
   if (s.holidays.some((h) => h.date === date)) throw new Error('That date is a school holiday.');
   if (s.exams.some((e) => e.date === date)) throw new Error('That date is an exam day.');
   if (!periodKind(timetable, it, date, periodId))
