@@ -1,0 +1,31 @@
+# Start everything:  docker compose up --build -d      Stop:  docker compose down
+# Each service needs its .env.docker file (not in Git – values are shared privately).
+services:
+  auth-service:
+    build: ./services/auth-service
+    image: qshikshak/auth-service
+    env_file: ./services/auth-service/.env.docker
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
+  api-gateway:
+    build: ./services/api-gateway
+    image: qshikshak/api-gateway
+    env_file: ./services/api-gateway/.env.docker
+    environment:
+      # Inside compose the gateway finds auth-service by its name
+      AUTH_URL: http://auth-service:5001
+      # Not in compose yet – until they are added below, reach them on the laptop
+      LESSON_PLAN_URL: http://host.docker.internal:5002
+      APPROVAL_URL: http://host.docker.internal:5003
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # so Linux/Mac teammates can use host.docker.internal too
+    ports:
+      - "5000:5000"
+    depends_on:
+      auth-service:
+        condition: service_healthy # wait until auth-service is healthy
+    restart: unless-stopped
+
+  # lesson-plan-service (B) and approval-service (C) get added here when they are ready
