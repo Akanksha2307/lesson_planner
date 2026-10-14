@@ -1015,3 +1015,23 @@ export async function updateItem(
     planStatusChanged
   };
 }
+
+// POST /plans/:id/submit
+export async function submitPlan(ctx, user, id) {
+  const plan = await findPlan(ctx, user, id);
+
+  if (!isOwnerOrAdmin(user, plan)) {
+    throw forbidden("Only the plan owner or admin can submit this plan.");
+  }
+
+  if (![PLAN_STATUS.DRAFT, PLAN_STATUS.RETURNED].includes(plan.status)) {
+    throw conflict("Only draft or returned plans can be submitted.");
+  }
+
+  plan.status = PLAN_STATUS.SUBMITTED;
+  plan.submittedAt = new Date();
+
+  await plan.save();
+
+  return plan.toJSON();
+}
