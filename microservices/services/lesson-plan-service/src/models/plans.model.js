@@ -69,6 +69,8 @@ const itemSchema = new Schema(
     topicTitle: String,
     chapterId: String,
     chapterTitle: String,
+    continued: { type: Boolean, default: false },
+continuationOf: { type: String, default: null },
     status: { type: String, enum: Object.values(LESSON_STATUS), default: LESSON_STATUS.PLANNED },
     details: { type: Schema.Types.Mixed, default: emptyDetails },
     completion: { type: Schema.Types.Mixed, default: null }, // filled when the lesson is marked (later step)

@@ -48,5 +48,14 @@ router.post('/plans/:id/extend', planners, async (req, res) => {
 router.patch('/plan-items/:id', planners, async (req, res) => {
   ok(res, await service.updateItem(req.ctx, req.user, req.params.id, updateItemBody.parse(req.body)), 'Lesson saved');
 });
+router.post('/plans/:id/submit', planners, async (req, res) => {
+  const result = await service.submitPlan(
+    req.ctx,
+    req.user,
+    req.params.id
+  );
+
+  ok(res, result, 'Plan submitted for approval');
+});
 
 export default router;
