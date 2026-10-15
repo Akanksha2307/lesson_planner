@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 import Notification from "../models/Notification.js";
 
@@ -28,9 +27,20 @@ export async function getNotifications(req, res) {
       .limit(100)
       .lean();
 
+    // The shape the frontend's bell uses: { id, to, title, text, link, at, read }
+    const data = notifications.map((n) => ({
+      id: String(n._id),
+      to: n.recipientId,
+      title: n.title,
+      text: n.message,
+      link: n.link || (n.relatedPlanId ? `/lesson-planner/plans/${n.relatedPlanId}` : null),
+      at: n.createdAt,
+      read: n.isRead
+    }));
+
     return res.status(200).json({
       success: true,
-      data: notifications,
+      data,
       message: "Notifications retrieved successfully."
     });
   } catch (error) {
@@ -57,8 +67,20 @@ export async function markNotificationsRead(req, res) {
 
     const { notificationIds } = req.body ?? {};
 
+    // The frontend's bell sends no ids ("mark all as read") – then every unread one is marked
+    if (!Array.isArray(notificationIds)) {
+      const all = await Notification.updateMany(
+        { schoolId: String(schoolId), recipientId: String(id), isRead: false },
+        { $set: { isRead: true, readAt: new Date() } }
+      );
+      return res.status(200).json({
+        success: true,
+        data: { modifiedCount: all.modifiedCount },
+        message: "Notifications marked as read."
+      });
+    }
+
     if (
-      !Array.isArray(notificationIds) ||
       notificationIds.length === 0 ||
       notificationIds.length > 100 ||
       !notificationIds.every(

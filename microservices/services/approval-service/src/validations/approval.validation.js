@@ -40,3 +40,14 @@ export function validateBody(schema) {
 export const lessonPlanReviewSchema = reviewSchema.extend({
   action: z.enum(["approve", "send-back"])
 });
+
+// POST /api/lesson-planner/plans/:id/review – what the frontend sends:
+//   { action: "approved" | "returned", comment, reviewerId }
+// ("approve" / "send-back" are accepted too). reviewerId is ignored – the reviewer is the logged-in user.
+export const planReviewSchema = z.object({
+  action: z
+    .enum(["approved", "returned", "approve", "send-back"])
+    .transform((a) => (a === "approve" ? "approved" : a === "send-back" ? "returned" : a)),
+  comment: z.string().trim().max(2000).optional().default(""),
+  reviewerId: z.string().optional()
+});
