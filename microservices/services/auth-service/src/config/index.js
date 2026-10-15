@@ -27,6 +27,9 @@ export const config = {
   internalToken: process.env.INTERNAL_TOKEN || 'dev-internal-token-change-me',
 
   defaultSchoolId: process.env.DEFAULT_SCHOOL_ID || 'one',
+  // Other services auth-service calls (sudden holiday → lesson-plan moves lessons, approval sends the bell)
+  lessonPlanUrl: process.env.LESSON_PLAN_URL || 'http://localhost:5002',
+  approvalUrl: process.env.APPROVAL_URL || 'http://localhost:5003',
   // x-user-id / x-user-role test headers and demo login (never in real production)
   allowDevAuth: process.env.ALLOW_DEV_AUTH ? process.env.ALLOW_DEV_AUTH === 'true' : env !== 'production',
 };

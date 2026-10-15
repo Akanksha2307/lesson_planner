@@ -8,6 +8,11 @@ services:
     ports:
       - "5001:5001"
     restart: unless-stopped
+    environment:
+      LESSON_PLAN_URL: http://lesson-plan-service:5002
+      APPROVAL_URL: http://host.docker.internal:5003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   lesson-plan-service:
     build: ./services/lesson-plan-service
