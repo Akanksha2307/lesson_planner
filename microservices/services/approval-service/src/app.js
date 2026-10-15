@@ -3,8 +3,10 @@ import cors from "cors";
 import helmet from "helmet";
 import approvalRoutes from "./routes/approval.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import internalRoutes from "./routes/internal.routes.js";
 import { getSubmissionDetails, reviewPlan } from "./controllers/approval.controller.js";
 import { authenticateToken, authorizeRoles } from "./middleware/auth.middleware.js";
+import { internalOnly } from "./middleware/internalOnly.js";
 import { validateBody, planReviewSchema } from "./validations/approval.validation.js";
 
 // Same prefix as the other services, so the gateway passes URLs through unchanged
@@ -55,6 +57,9 @@ app.post(
 
 // Approval records and review history
 app.use(`${BASE}/approvals`, approvalRoutes);
+
+// Service-to-service: other services ring the bell (needs the INTERNAL_TOKEN)
+app.use("/internal", internalOnly, internalRoutes);
 
 // One plan's approval record
 app.get(`${BASE}/submissions/:planId`, authenticateToken, getSubmissionDetails);
