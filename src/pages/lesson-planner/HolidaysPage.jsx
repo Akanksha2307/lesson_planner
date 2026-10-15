@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, CalendarClock } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Modal from '@/components/common/Modal';
@@ -6,8 +6,7 @@ import { useToast } from '@/context/ToastContext';
 import { useDialog } from '@/context/DialogContext';
 import { useApp } from '@/context/AppContext';
 import { todayISO, fmtLong } from '@/utils/date';
-import { readFeatureStore, updateFeatureStore, uid } from '@/services/featureStore';
-import { getHolidayImpact, rescheduleLessonsForUnexpectedHoliday } from '@/services/holidayScheduler';
+import { lessonPlannerApi } from '@/services/lessonPlannerApi';
 import './HolidaysPage.css';
 
 const empty = { name: '', date: '', description: '', unexpected: false };
@@ -17,116 +16,204 @@ export default function HolidaysPage() {
   const dialog = useDialog();
   const { loadMasters, loadNotifications } = useApp();
 
-  const [data, setData] = useState(readFeatureStore);
+  const [data, setData] = useState({ holidays: [] });
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
-  const [confirm, setConfirm] = useState(null); // { holiday, impact }
+  const [confirm, setConfirm] = useState(null);
+  const [impact, setImpact] = useState(0);
+  const [busy, setBusy] = useState(false);
 
-  const refresh = (fn) => setData(updateFeatureStore(fn));
+  const refresh = async () => {
+    const response = await lessonPlannerApi.getHolidays();
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to load holidays');
+    }
+
+    setData({ holidays: response.data || [] });
+  };
+
+  useEffect(() => {
+    refresh().catch(() => {
+      toast('Failed to load holidays.', 'error');
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!form.unexpected || !form.date || form.date < todayISO()) {
+      setImpact(0);
+      return;
+    }
+
+    let active = true;
+
+    lessonPlannerApi.getHolidayImpact(form.date)
+      .then(response => {
+        if (active) {
+          setImpact(Number(response.data?.impact ?? 0));
+        }
+      })
+      .catch(() => {
+        if (active) setImpact(0);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [form.date, form.unexpected]);
+
   const resetForm = () => {
     setForm(empty);
     setEditing(null);
   };
 
-  // Save the holiday itself (add or edit). Returns the saved holiday.
-  const storeHoliday = (values) => {
-    const id = editing || uid('hol');
-    refresh((s) => {
-      const existing = s.holidays.find((x) => x.id === id);
-      if (existing) Object.assign(existing, values);
-      else s.holidays.push({ id, ...values });
-      return s;
-    });
-    return { id, ...values };
+  const persistHoliday = async (values) => {
+    setBusy(true);
+
+    try {
+      const response = await lessonPlannerApi.saveHoliday({
+        ...(editing ? { id: editing } : {}),
+        ...values
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to save holiday');
+      }
+
+      await refresh();
+      resetForm();
+      setConfirm(null);
+
+      await loadMasters?.();
+      await loadNotifications?.();
+
+      const result = response.data || {};
+      const affected = Number(result.affectedCount ?? 0);
+      const moved = Number(result.movedCount ?? 0);
+
+      if (affected > 0) {
+        toast(
+          `${affected} lessons affected; ${moved} periods shifted forward.`,
+          moved < affected ? 'error' : 'success'
+        );
+      } else {
+        toast('Holiday saved successfully.');
+      }
+    } catch (error) {
+      toast(error.message || 'Failed to save holiday.', 'error');
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const save = () => {
+  const save = async () => {
+    if (busy) return;
+
     if (!form.name.trim() || !form.date) {
       toast('Enter a holiday name and date.', 'error');
       return;
     }
-    const clash = data.holidays.find((h) => h.date === form.date && h.id !== editing);
+
+    const clash = data.holidays.find(
+      h => h.date === form.date && h.id !== editing
+    );
+
     if (clash) {
-      toast(`${form.date} is already a holiday (${clash.name}).`, 'error');
+      toast(
+        `${form.date} is already a holiday (${clash.name}).`,
+        'error'
+      );
       return;
     }
 
-    const before = editing ? data.holidays.find((h) => h.id === editing) : null;
+    const before = editing
+      ? data.holidays.find(h => h.id === editing)
+      : null;
+
     const dateChanged = !before || before.date !== form.date;
     const becameUnexpected = !before?.unexpected && form.unexpected;
 
-    // Only shift lessons for a sudden holiday that is today or later,
-    // and only when it is new / its date changed / it was just marked unexpected.
-    const shouldExtend = form.unexpected && form.date >= todayISO() && (dateChanged || becameUnexpected);
-    const impact = shouldExtend ? getHolidayImpact(form.date) : 0;
+    const shouldExtend =
+      form.unexpected &&
+      form.date >= todayISO() &&
+      (dateChanged || becameUnexpected);
 
-    if (shouldExtend && impact > 0) {
-      setConfirm({ holiday: { ...form }, impact });
-      return;
+    if (shouldExtend) {
+      try {
+        const response = await lessonPlannerApi.getHolidayImpact(form.date);
+
+        if (!response.success) {
+          throw new Error(response.message || 'Impact check failed');
+        }
+
+        const count = Number(response.data?.impact ?? 0);
+
+        if (count > 0) {
+          setConfirm({ holiday: { ...form }, impact: count });
+          return;
+        }
+      } catch (error) {
+        toast('Unable to check holiday impact. Holiday not saved.', 'error');
+        return;
+      }
     }
 
-    storeHoliday({ ...form });
-    resetForm();
-    loadMasters?.();
-    toast(
-      form.unexpected && shouldExtend
-        ? 'Holiday added. No lessons were planned on that day.'
-        : `Holiday ${editing ? 'updated' : 'added'}.`,
-    );
+    await persistHoliday(form);
   };
 
-  // Confirmed: save holiday, then push the lessons forward
-  const confirmExtend = () => {
-    const saved = storeHoliday(confirm.holiday);
-    const result = rescheduleLessonsForUnexpectedHoliday(saved);
-
-    refresh((s) => {
-      const h = s.holidays.find((x) => x.id === saved.id);
-      if (h) {
-        h.movedCount = result.movedCount;
-        h.affectedCount = result.affectedCount;
-      }
-      return s;
-    });
-
-    setConfirm(null);
-    resetForm();
-    loadMasters?.();
-    loadNotifications?.();
-
-    if (result.movedCount < result.affectedCount) {
-      toast(
-        `${result.affectedCount} lessons affected, but only ${result.movedCount} lesson moves fit in the timetable. Check the plans.`,
-        'error',
-      );
-    } else {
-      toast(
-        `${result.affectedCount} lesson${result.affectedCount === 1 ? '' : 's'} extended – ${result.movedCount} period${result.movedCount === 1 ? '' : 's'} shifted forward. Teachers and HODs were notified.`,
-      );
-    }
+  const confirmExtend = async () => {
+    if (busy || !confirm) return;
+    await persistHoliday(confirm.holiday);
   };
 
   const edit = (h) => {
     setEditing(h.id);
-    setForm({ name: h.name, date: h.date, description: h.description || '', unexpected: !!h.unexpected });
+    setForm({
+      name: h.name,
+      date: h.date,
+      description: h.description || '',
+      unexpected: !!h.unexpected
+    });
   };
 
   const remove = async (h) => {
+    if (busy) return;
+
     const ok = await dialog.confirm({
       title: 'Delete holiday?',
-      message: `"${h.name}" will be deleted.${h.movedCount ? '\nLessons already moved for this holiday will stay on their new dates.' : ''}`,
+      message:
+        `"${h.name}" will be deleted.` +
+        (h.movedCount
+          ? '\nLessons already moved will stay on their new dates.'
+          : ''),
       confirmLabel: 'Delete',
-      danger: true,
+      danger: true
     });
+
     if (!ok) return;
-    refresh((s) => {
-      s.holidays = s.holidays.filter((x) => x.id !== h.id);
-      return s;
-    });
-    loadMasters?.();
+
+    setBusy(true);
+
+    try {
+      const response = await lessonPlannerApi.deleteHoliday(h.id);
+
+      if (!response.success) {
+        throw new Error(response.message || 'Delete failed');
+      }
+
+      await refresh();
+      await loadMasters?.();
+      toast('Holiday deleted successfully.');
+    } catch (error) {
+      toast(error.message || 'Failed to delete holiday.', 'error');
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const sorted = [...data.holidays].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...data.holidays].sort(
+    (a, b) => a.date.localeCompare(b.date)
+  );
 
   return (
     <div className="holidays-page stack">
@@ -182,7 +269,7 @@ export default function HolidaysPage() {
             {form.unexpected && form.date && form.date >= todayISO() && (
               <div className="span-2 holiday-impact small">
                 <CalendarClock size={15} />
-                {getHolidayImpact(form.date)} planned lesson(s) on this date will be extended.
+                {impact} planned lesson(s) on this date will be extended.
               </div>
             )}
 
@@ -214,11 +301,11 @@ export default function HolidaysPage() {
                     )}
                   </div>
                   <div className="small muted">
-                    {h.date} · {h.description || 'No description'}
+                    {h.date} Â· {h.description || 'No description'}
                   </div>
                   {h.movedCount > 0 && (
                     <div className="small muted">
-                      {h.affectedCount} lesson(s) extended · {h.movedCount} period(s) shifted
+                      {h.affectedCount} lesson(s) extended Â· {h.movedCount} period(s) shifted
                     </div>
                   )}
                 </div>
@@ -240,7 +327,7 @@ export default function HolidaysPage() {
         open={!!confirm}
         onClose={() => setConfirm(null)}
         title="Extend classes for this holiday?"
-        subtitle={confirm ? `${confirm.holiday.name} · ${fmtLong(confirm.holiday.date)}` : ''}
+        subtitle={confirm ? `${confirm.holiday.name} Â· ${fmtLong(confirm.holiday.date)}` : ''}
         width={520}
         footer={
           <>
@@ -263,7 +350,7 @@ export default function HolidaysPage() {
             </p>
             <p className="muted small">
               Each lesson moves to the next timetable period of the same class and subject. Later lessons shift forward
-              in order, and a plan’s end date is extended if needed. The original entries are kept in history, and
+              in order, and a planâ€™s end date is extended if needed. The original entries are kept in history, and
               teachers and HODs get a notification.
             </p>
           </div>

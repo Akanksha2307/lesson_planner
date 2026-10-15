@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import Card from '@/components/common/Card';
 import ProgressBar from '@/components/common/ProgressBar';
 import { useDialog } from '@/context/DialogContext';
-import { calculateAvailableClasses, readFeatureStore, updateFeatureStore, uid } from '@/services/featureStore';
+import { calculateAvailableClasses, readFeatureStore } from '@/services/featureStore';
+import { lessonPlannerApi } from '@/services/lessonPlannerApi';
 import './ExaminationsPage.css';
 
 const blank = {
@@ -24,10 +25,32 @@ const blank = {
 
 export default function ExaminationsPage() {
   const dialog = useDialog();
-  const [data, setData] = useState(readFeatureStore);
+  const [data, setData] = useState(() => ({
+    ...readFeatureStore(),
+    exams: []
+  }));
   const [form, setForm] = useState(blank);
   const [editing, setEditing] = useState(null);
-  const refresh = (fn) => setData(updateFeatureStore(fn));
+
+  const refresh = async () => {
+    const response = await lessonPlannerApi.getExams();
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to load examinations');
+    }
+
+    setData(previous => ({
+      ...previous,
+      exams: response.data || []
+    }));
+  };
+
+  useEffect(() => {
+    refresh().catch(error => {
+      console.error('Failed to load examinations:', error);
+    });
+  }, []);
+
   const holidays = data.holidays.map((h) => h.date);
   const examDates = data.exams.filter((e) => e.id !== editing).map((e) => e.examDate);
   const available = useMemo(
@@ -42,19 +65,50 @@ export default function ExaminationsPage() {
     [form.examDate, form.classesPerWeek, holidays.join(','), examDates.join(',')],
   );
   const remaining = available - (Number(form.requiredPeriods) || 0) - (Number(form.revisionPeriods) || 0);
-  const save = () => {
+  const save = async () => {
     if (!form.examDate || !form.examName) return;
-    refresh((s) => {
-      if (editing)
-        Object.assign(
-          s.exams.find((x) => x.id === editing),
-          form,
-        );
-      else s.exams.push({ id: uid('exam'), ...form });
-      return s;
+
+    try {
+      const response = await lessonPlannerApi.saveExam({
+        ...(editing ? { id: editing } : {}),
+        ...form
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to save examination');
+      }
+
+      await refresh();
+      setEditing(null);
+      setForm(blank);
+    } catch (error) {
+      console.error('Failed to save examination:', error);
+      window.alert(error.message || 'Failed to save examination');
+    }
+  };
+
+  const remove = async (exam) => {
+    const ok = await dialog.confirm({
+      title: 'Delete exam?',
+      message: `"${exam.examName}" will be deleted.`,
+      confirmLabel: 'Delete',
+      danger: true
     });
-    setEditing(null);
-    setForm(blank);
+
+    if (!ok) return;
+
+    try {
+      const response = await lessonPlannerApi.deleteExam(exam.id);
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to delete examination');
+      }
+
+      await refresh();
+    } catch (error) {
+      console.error('Failed to delete examination:', error);
+      window.alert(error.message || 'Failed to delete examination');
+    }
   };
   const edit = (e) => {
     setEditing(e.id);
@@ -259,7 +313,7 @@ export default function ExaminationsPage() {
                     <div>
                       <div className="strong">{e.examName}</div>
                       <div className="small muted">
-                        {data.classes.find((c) => c.id === e.classId)?.name} {e.section} · {e.subject} · {e.examDate}
+                        {data.classes.find((c) => c.id === e.classId)?.name} {e.section} Â· {e.subject} Â· {e.examDate}
                       </div>
                     </div>
                     <div className="actions">
@@ -269,18 +323,7 @@ export default function ExaminationsPage() {
                       <button
                         className="icon-btn"
                         aria-label={`Delete ${e.examName}`}
-                        onClick={async () =>
-                          (await dialog.confirm({
-                            title: 'Delete exam?',
-                            message: `"${e.examName}" will be deleted.`,
-                            confirmLabel: 'Delete',
-                            danger: true,
-                          })) &&
-                          refresh((s) => {
-                            s.exams = s.exams.filter((x) => x.id !== e.id);
-                            return s;
-                          })
-                        }
+                        onClick={() => remove(e)}
                       >
                         <Trash2 size={15} />
                       </button>

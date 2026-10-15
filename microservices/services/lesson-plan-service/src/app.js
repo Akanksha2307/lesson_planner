@@ -7,7 +7,7 @@ import morgan from "morgan";
 import { config } from "./config/index.js";
 import { authenticate } from "./middleware/auth.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-
+import holidayRoutes from "./routes/holiday.routes.js";
 import internalRoutes from "./routes/internal.routes.js";
 import syllabusRoutes from "./routes/syllabus.routes.js";
 import libraryRoutes from "./routes/library.routes.js";
@@ -60,7 +60,7 @@ app.use(BASE, authenticate, calendarRoutes);
 app.use(BASE, authenticate, completionRoutes);
 app.use(BASE, authenticate, rescheduleRoutes);
 app.use(BASE, authenticate, remainingRoutes);
-
+app.use(BASE, authenticate, holidayRoutes);
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({

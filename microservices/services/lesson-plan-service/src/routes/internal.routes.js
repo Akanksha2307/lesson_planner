@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { internalAuth } from "../middleware/internalAuth.js";
 import { Plan, PlanItem } from "../models/plans.model.js";
-
+import { shiftLessonsForHoliday } from "../services/holiday-shift.service.js";
 const router = Router();
 
 router.get("/plans/:id", internalAuth, async (req, res, next) => {
@@ -108,6 +108,40 @@ router.patch("/plans/:id/status", internalAuth, async (req, res, next) => {
       message: `Lesson plan ${status} successfully`
     });
   } catch (error) {
+    next(error);
+  }
+});
+
+// POST /internal/holiday-shift
+// Called when an unexpected holiday is declared.
+
+router.post("/holiday-shift", internalAuth, async (req, res, next) => {
+  try {
+    const { schoolId, date } = req.body || {};
+
+    if (!schoolId || typeof schoolId !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "schoolId is required"
+      });
+    }
+
+    const result = await shiftLessonsForHoliday(schoolId, date);
+
+    return res.json({
+      success: true,
+      data: result,
+      message: "Holiday rescheduling completed"
+    });
+
+  } catch (error) {
+    if (error.status === 400 || error.status === 409) {
+      return res.status(error.status).json({
+        success: false,
+        message: error.message
+      });
+    }
+
     next(error);
   }
 });

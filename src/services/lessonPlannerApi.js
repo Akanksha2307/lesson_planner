@@ -52,6 +52,56 @@ export const lessonPlannerApi = {
   getCoverage: pick(mock.getCoverage, (p) => http.get(`${base}/reports/coverage`, { params: p })),
   getTeacherReport: pick(mock.getTeacherReport, () => http.get(`${base}/reports/teachers`)),
 
+// Holidays
+getHolidays: pick(
+  mock.getHolidays,
+  () => http.get(`${base}/holidays`)
+),
+
+saveHoliday: pick(
+  mock.saveHoliday,
+  (body) => {
+    const id = body.id || body._id;
+
+    return id
+      ? http.put(`${base}/holidays/${id}`, body)
+      : http.post(`${base}/holidays`, body);
+  }
+),
+
+deleteHoliday: pick(
+  mock.deleteHoliday,
+  (id) => http.delete(`${base}/holidays/${id}`)
+),
+
+getHolidayImpact: pick(
+  mock.getHolidayImpact,
+  (date) => http.get(`${base}/holidays/impact`, {
+    params: { date }
+  })
+),
+
+// Examinations
+getExams: pick(
+  mock.getExams,
+  () => http.get(`${base}/exams`)
+),
+
+saveExam: pick(
+  mock.saveExam,
+  (body) => {
+    const id = body.id || body._id;
+
+    return id
+      ? http.put(`${base}/exams/${id}`, body)
+      : http.post(`${base}/exams`, body);
+  }
+),
+deleteExam: pick(
+  mock.deleteExam,
+  (id) => http.delete(`${base}/exams/${id}`)
+),
+
   // Notifications
   getNotifications: pick(mock.getNotifications, (p) => http.get(`${base}/notifications`, { params: p })),
   markNotificationsRead: pick(mock.markNotificationsRead, () => http.post(`${base}/notifications/read`)),
