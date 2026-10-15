@@ -13,8 +13,23 @@ export const RULES = [
   { match: new RegExp(`^${LP}/plans/[^/]+/review$`), service: 'approval' },
   { match: new RegExp(`^${LP}/(approvals|submissions|notifications)(/|$)`), service: 'approval' },
 
-  // lesson-plan-service: syllabus, plans (incl. submit), lessons, Today, Timetable, History, Reports, library
-  { match: new RegExp(`^${LP}/(syllabus|library|plans|plan-items|today|calendar|history|reports)(/|$)`), service: 'lessonPlan' },
+  // lesson-plan-service: syllabus, plans, lessons, calendar, reports and AI
+  {
+    match: new RegExp(`^${LP}/(syllabus|library|plans|plan-items|today|calendar|history|reports|ai)(/|$)`),
+    service: 'lessonPlan'
+  },
+
+  // Holiday impact calculation belongs to lesson-plan-service
+  {
+    match: new RegExp(`^${LP}/holidays/impact$`),
+    service: 'lessonPlan'
+  },
+
+  // Holiday and Examination CRUD belongs to auth-service
+  {
+    match: new RegExp(`^${LP}/(holidays|exams)(/|$)`),
+    service: 'auth'
+  },
 ];
 
 // Names used in messages and in /api/health

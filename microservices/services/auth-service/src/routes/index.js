@@ -4,12 +4,14 @@ import { authenticate } from '../middleware/authenticate.js';
 import { internalOnly } from '../middleware/internalOnly.js';
 import authRoutes from './auth.routes.js';
 import mastersRoutes from './masters.routes.js';
+import calendarRoutes from './calendar.routes.js';
 import internalRoutes from './internal.routes.js';
 
 const router = Router();
 
 router.use('/api/auth', authRoutes); //                             login, me
 router.use('/api/lesson-planner', authenticate, mastersRoutes); //  needs a logged-in user
+router.use('/api/lesson-planner', authenticate, calendarRoutes); // holidays, exams
 router.use('/internal', internalOnly, internalRoutes); //           needs the INTERNAL_TOKEN
 
 export default router;

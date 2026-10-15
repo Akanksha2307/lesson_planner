@@ -8,3 +8,5 @@ export * from './lessons';
 export * from './syllabus';
 export * from './reports';
 export * from './settings';
+
+export * from './academic';

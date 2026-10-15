@@ -26,5 +26,42 @@ slotSchema.index({ schoolId: 1, sectionId: 1, weekday: 1, periodId: 1 }, { uniqu
 export const TimetableSlot = mongoose.model('TimetableSlot', slotSchema);
 
 // date is "YYYY-MM-DD" (same as the frontend)
-export const Holiday = mongoose.model('Holiday', schoolModel('hol', { date: req(String), title: req(String) }));
-export const Exam = mongoose.model('Exam', schoolModel('exam', { date: req(String), title: req(String) }));
+// unexpected = a sudden holiday: lessons planned that day move to the next free period
+export const Holiday = mongoose.model(
+  'Holiday',
+  schoolModel('hol', {
+    date: req(String),
+    title: req(String),
+    description: { type: String, default: '' },
+    unexpected: { type: Boolean, default: false },
+    affectedCount: { type: Number, default: 0 },
+    movedCount: { type: Number, default: 0 },
+  }),
+);
+
+// Exam days – planning skips these. examPlanId links a day to the exam on the Examinations page.
+export const Exam = mongoose.model('Exam', schoolModel('exam', { date: req(String), title: req(String), examPlanId: String }));
+
+// An exam planned on the Examinations page (same field names as the frontend form)
+export const ExamPlan = mongoose.model(
+  'ExamPlan',
+  schoolModel(
+    'examplan',
+    {
+      examName: req(String),
+      academicYear: { type: String, default: '' },
+      classId: { type: String, default: '' },
+      section: { type: String, default: '' },
+      subject: { type: String, default: '' },
+      examDate: req(String),
+      startDate: { type: String, default: '' },
+      endDate: { type: String, default: '' },
+      classesPerWeek: { type: Number, default: 0 },
+      requiredPeriods: { type: Number, default: 0 },
+      revisionPeriods: { type: Number, default: 0 },
+      syllabusIncluded: { type: String, default: '' },
+      remarks: { type: String, default: '' },
+    },
+    'examplans',
+  ),
+);
