@@ -1,5 +1,5 @@
-﻿
-import * as approvalService from "../services/approval.service.js";
+﻿import * as approvalService from "../services/approval.service.js";
+import * as reviewService from "../services/review.service.js";
 
 function handleError(res, error) {
   const status = error.status || 500;
@@ -267,6 +267,17 @@ export async function reviewLessonPlan(req, res) {
       approval,
       "Lesson plan review completed."
     );
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+// POST /api/lesson-planner/plans/:id/review  –  HOD (or principal when the HOD is unavailable)
+// approves or sends back. Changes the plan's status in lesson-plan-service.
+export async function reviewPlan(req, res) {
+  try {
+    const plan = await reviewService.reviewPlan(req.user, req.params.id, req.body);
+    return sendSuccess(res, plan, req.body.action === "approved" ? "Plan approved" : "Plan sent back");
   } catch (error) {
     return handleError(res, error);
   }

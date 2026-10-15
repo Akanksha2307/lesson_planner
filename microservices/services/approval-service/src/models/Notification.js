@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const notificationSchema = new mongoose.Schema(
@@ -32,6 +31,11 @@ const notificationSchema = new mongoose.Schema(
       maxlength: 2000
     },
     relatedPlanId: {
+      type: String,
+      default: null
+    },
+    // Page the bell opens when clicked, e.g. /lesson-planner/plans/plan-123
+    link: {
       type: String,
       default: null
     },
