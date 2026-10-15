@@ -33,17 +33,29 @@ export default function ExaminationsPage() {
   const [editing, setEditing] = useState(null);
 
   const refresh = async () => {
-    const response = await lessonPlannerApi.getExams();
+  const [examResponse, holidayResponse] = await Promise.all([
+    lessonPlannerApi.getExams(),
+    lessonPlannerApi.getHolidays()
+  ]);
 
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to load examinations');
-    }
+  if (!examResponse.success) {
+    throw new Error(
+      examResponse.message || 'Failed to load examinations'
+    );
+  }
 
-    setData(previous => ({
-      ...previous,
-      exams: response.data || []
-    }));
-  };
+  if (!holidayResponse.success) {
+    throw new Error(
+      holidayResponse.message || 'Failed to load holidays'
+    );
+  }
+
+  setData(previous => ({
+    ...previous,
+    exams: examResponse.data || [],
+    holidays: holidayResponse.data || []
+  }));
+};
 
   useEffect(() => {
     refresh().catch(error => {
@@ -313,7 +325,7 @@ export default function ExaminationsPage() {
                     <div>
                       <div className="strong">{e.examName}</div>
                       <div className="small muted">
-                        {data.classes.find((c) => c.id === e.classId)?.name} {e.section} Â· {e.subject} Â· {e.examDate}
+                        {data.classes.find((c) => c.id === e.classId)?.name} {e.section} · {e.subject} · {e.examDate}
                       </div>
                     </div>
                     <div className="actions">

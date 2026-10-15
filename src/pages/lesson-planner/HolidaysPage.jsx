@@ -301,11 +301,11 @@ export default function HolidaysPage() {
                     )}
                   </div>
                   <div className="small muted">
-                    {h.date} Â· {h.description || 'No description'}
+                    {h.date} · {h.description || 'No description'}
                   </div>
                   {h.movedCount > 0 && (
                     <div className="small muted">
-                      {h.affectedCount} lesson(s) extended Â· {h.movedCount} period(s) shifted
+                      {h.affectedCount} lesson(s) extended · {h.movedCount} period(s) shifted
                     </div>
                   )}
                 </div>
@@ -327,7 +327,7 @@ export default function HolidaysPage() {
         open={!!confirm}
         onClose={() => setConfirm(null)}
         title="Extend classes for this holiday?"
-        subtitle={confirm ? `${confirm.holiday.name} Â· ${fmtLong(confirm.holiday.date)}` : ''}
+        subtitle={confirm ? `${confirm.holiday.name} · ${fmtLong(confirm.holiday.date)}` : ''}
         width={520}
         footer={
           <>
@@ -350,7 +350,7 @@ export default function HolidaysPage() {
             </p>
             <p className="muted small">
               Each lesson moves to the next timetable period of the same class and subject. Later lessons shift forward
-              in order, and a planâ€™s end date is extended if needed. The original entries are kept in history, and
+              in order, and a plan’s end date is extended if needed. The original entries are kept in history, and
               teachers and HODs get a notification.
             </p>
           </div>
