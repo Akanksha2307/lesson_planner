@@ -14,7 +14,9 @@ export const RULES = [
   { match: new RegExp(`^${LP}/(approvals|submissions|notifications)(/|$)`), service: 'approval' },
 
   // lesson-plan-service: syllabus, plans (incl. submit), lessons, Today, Timetable, History, Reports, library
-  { match: new RegExp(`^${LP}/(syllabus|library|plans|plan-items|today|calendar|history|reports)(/|$)`), service: 'lessonPlan' },
+  { match: new RegExp(`^${LP}/(syllabus|library|plans|plan-items|today|calendar|history|reports|ai)(/|$)`), service: 'lessonPlan' },
+  { match: new RegExp(`^${LP}/holidays/impact$`), service: 'lessonPlan' },
+  { match: new RegExp(`^${LP}/(holidays|exams)(/|$)`), service: 'auth' },
 ];
 
 // Names used in messages and in /api/health
