@@ -1,0 +1,643 @@
+{
+ "classes": [
+  {
+   "id": "c7",
+   "name": "Class 7"
+  },
+  {
+   "id": "c8",
+   "name": "Class 8"
+  }
+ ],
+ "sections": [
+  {
+   "id": "s7a",
+   "classId": "c7",
+   "name": "A"
+  },
+  {
+   "id": "s8a",
+   "classId": "c8",
+   "name": "A"
+  },
+  {
+   "id": "s8b",
+   "classId": "c8",
+   "name": "B"
+  }
+ ],
+ "subjects": [
+  {
+   "id": "sci",
+   "name": "Science",
+   "departmentId": "d-sci"
+  },
+  {
+   "id": "math",
+   "name": "Mathematics",
+   "departmentId": "d-math"
+  },
+  {
+   "id": "eng",
+   "name": "English",
+   "departmentId": "d-lang"
+  }
+ ],
+ "departments": [
+  {
+   "id": "d-sci",
+   "name": "Science",
+   "hodId": "t3"
+  },
+  {
+   "id": "d-math",
+   "name": "Mathematics",
+   "hodId": "t3"
+  },
+  {
+   "id": "d-lang",
+   "name": "Languages",
+   "hodId": "t3"
+  }
+ ],
+ "staff": [
+  {
+   "id": "t1",
+   "name": "Priya Sharma",
+   "role": "teacher",
+   "departmentId": "d-sci"
+  },
+  {
+   "id": "t2",
+   "name": "Ravi Kumar",
+   "role": "teacher",
+   "departmentId": "d-math"
+  },
+  {
+   "id": "t5",
+   "name": "Kavya Reddy",
+   "role": "teacher",
+   "departmentId": "d-lang"
+  },
+  {
+   "id": "t3",
+   "name": "Anitha Rao",
+   "role": "hod",
+   "departmentId": "d-sci"
+  },
+  {
+   "id": "a1",
+   "name": "Suresh Varma",
+   "role": "admin"
+  },
+  {
+   "id": "p1",
+   "name": "Dr. Meena Iyer",
+   "role": "principal"
+  },
+  {
+   "id": "pa1",
+   "name": "Demo Parent",
+   "role": "parent"
+  }
+ ],
+ "timetable": [
+  {
+   "sectionId": "s8a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 0,
+   "periodId": "p1"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 1,
+   "periodId": "p3"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 2,
+   "periodId": "p2"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 3,
+   "periodId": "p6"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 4,
+   "periodId": "p4"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 5,
+   "periodId": "p2"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 0,
+   "periodId": "p4"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 1,
+   "periodId": "p6"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 2,
+   "periodId": "p5"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 4,
+   "periodId": "p1"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 5,
+   "periodId": "p4"
+  },
+  {
+   "sectionId": "s7a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 0,
+   "periodId": "p6"
+  },
+  {
+   "sectionId": "s7a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 2,
+   "periodId": "p7"
+  },
+  {
+   "sectionId": "s7a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 3,
+   "periodId": "p2"
+  },
+  {
+   "sectionId": "s7a",
+   "subjectId": "sci",
+   "teacherId": "t1",
+   "weekday": 4,
+   "periodId": "p7"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 0,
+   "periodId": "p2"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 1,
+   "periodId": "p1"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 2,
+   "periodId": "p3"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 3,
+   "periodId": "p1"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 4,
+   "periodId": "p2"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 5,
+   "periodId": "p1"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 0,
+   "periodId": "p3"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 1,
+   "periodId": "p4"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 2,
+   "periodId": "p1"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 3,
+   "periodId": "p5"
+  },
+  {
+   "sectionId": "s8b",
+   "subjectId": "math",
+   "teacherId": "t2",
+   "weekday": 4,
+   "periodId": "p6"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "eng",
+   "teacherId": "t5",
+   "weekday": 0,
+   "periodId": "p5"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "eng",
+   "teacherId": "t5",
+   "weekday": 1,
+   "periodId": "p2"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "eng",
+   "teacherId": "t5",
+   "weekday": 2,
+   "periodId": "p4"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "eng",
+   "teacherId": "t5",
+   "weekday": 3,
+   "periodId": "p3"
+  },
+  {
+   "sectionId": "s8a",
+   "subjectId": "eng",
+   "teacherId": "t5",
+   "weekday": 4,
+   "periodId": "p5"
+  }
+ ],
+ "holidays": [
+  {
+   "date": "2026-10-14",
+   "title": "Annual Day"
+  },
+  {
+   "date": "2026-10-02",
+   "title": "Gandhi Jayanti"
+  },
+  {
+   "date": "2026-08-15",
+   "title": "Independence Day"
+  },
+  {
+   "date": "2026-01-26",
+   "title": "Republic Day"
+  }
+ ],
+ "exams": [
+  {
+   "date": "2026-10-26",
+   "title": "Unit Test 2"
+  },
+  {
+   "date": "2026-10-27",
+   "title": "Unit Test 2"
+  }
+ ],
+ "templates": [
+  {
+   "id": "tpl-ssc",
+   "name": "SSC standard",
+   "board": "SSC",
+   "isDefault": true,
+   "fields": [
+    {
+     "key": "objectives",
+     "label": "Learning objectives",
+     "type": "list",
+     "enabled": true,
+     "required": true
+    },
+    {
+     "key": "prerequisites",
+     "label": "Prerequisites",
+     "type": "text",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "method",
+     "label": "Teaching method",
+     "type": "method",
+     "enabled": true,
+     "required": true
+    },
+    {
+     "key": "activities",
+     "label": "Activities / procedure",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "resources",
+     "label": "Resources",
+     "type": "resources",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "assessment",
+     "label": "Check for understanding",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "homework",
+     "label": "Homework",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    }
+   ]
+  },
+  {
+   "id": "tpl-cbse",
+   "name": "CBSE competency-based",
+   "board": "CBSE",
+   "isDefault": false,
+   "fields": [
+    {
+     "key": "objectives",
+     "label": "Learning objectives",
+     "type": "list",
+     "enabled": true,
+     "required": true
+    },
+    {
+     "key": "prerequisites",
+     "label": "Prerequisites",
+     "type": "text",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "method",
+     "label": "Teaching method",
+     "type": "method",
+     "enabled": true,
+     "required": true
+    },
+    {
+     "key": "activities",
+     "label": "Activities / procedure",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "resources",
+     "label": "Resources",
+     "type": "resources",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "assessment",
+     "label": "Check for understanding",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "homework",
+     "label": "Homework",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "competency",
+     "label": "Learning outcome code",
+     "type": "text",
+     "enabled": true,
+     "required": false
+    }
+   ]
+  },
+  {
+   "id": "tpl-icse",
+   "name": "ICSE standard",
+   "board": "ICSE",
+   "isDefault": false,
+   "fields": [
+    {
+     "key": "objectives",
+     "label": "Learning objectives",
+     "type": "list",
+     "enabled": true,
+     "required": true
+    },
+    {
+     "key": "prerequisites",
+     "label": "Prerequisites",
+     "type": "text",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "method",
+     "label": "Teaching method",
+     "type": "method",
+     "enabled": true,
+     "required": true
+    },
+    {
+     "key": "activities",
+     "label": "Activities / procedure",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "resources",
+     "label": "Resources",
+     "type": "resources",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "assessment",
+     "label": "Check for understanding",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "homework",
+     "label": "Homework",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    },
+    {
+     "key": "boardWork",
+     "label": "Board work",
+     "type": "textarea",
+     "enabled": true,
+     "required": false
+    }
+   ]
+  }
+ ],
+ "schoolId": "one",
+ "settings": {
+  "approvalRequired": true,
+  "approver": "hod",
+  "submissionDay": "Saturday",
+  "dailyReminderTime": "18:00",
+  "autoShift": true,
+  "skipHolidays": true,
+  "skipExams": true,
+  "whatsappHomework": false,
+  "editAfterApproval": "reapprove",
+  "bellSchedule": [
+   {
+    "id": "asm",
+    "type": "assembly",
+    "label": "Assembly (20 min)",
+    "start": "08:40",
+    "end": "09:00"
+   },
+   {
+    "id": "p1",
+    "type": "period",
+    "label": "Period 1",
+    "start": "09:00",
+    "end": "09:40"
+   },
+   {
+    "id": "p2",
+    "type": "period",
+    "label": "Period 2",
+    "start": "09:40",
+    "end": "10:20"
+   },
+   {
+    "id": "p3",
+    "type": "period",
+    "label": "Period 3",
+    "start": "10:20",
+    "end": "11:00"
+   },
+   {
+    "id": "b1",
+    "type": "break",
+    "label": "Morning Session Break (15 min)",
+    "start": "11:00",
+    "end": "11:15"
+   },
+   {
+    "id": "p4",
+    "type": "period",
+    "label": "Period 4",
+    "start": "11:15",
+    "end": "11:55"
+   },
+   {
+    "id": "p5",
+    "type": "period",
+    "label": "Period 5",
+    "start": "11:55",
+    "end": "12:35"
+   },
+   {
+    "id": "lunch",
+    "type": "break",
+    "label": "Lunch Break (35 min)",
+    "start": "12:35",
+    "end": "13:10"
+   },
+   {
+    "id": "p6",
+    "type": "period",
+    "label": "Period 6",
+    "start": "13:10",
+    "end": "14:00"
+   },
+   {
+    "id": "p7",
+    "type": "period",
+    "label": "Period 7",
+    "start": "14:00",
+    "end": "14:40"
+   },
+   {
+    "id": "p8",
+    "type": "period",
+    "label": "Period 8",
+    "start": "14:40",
+    "end": "15:20"
+   },
+   {
+    "id": "b2",
+    "type": "break",
+    "label": "Afternoon Session Break (10 min)",
+    "start": "15:20",
+    "end": "15:30"
+   },
+   {
+    "id": "study",
+    "type": "study",
+    "label": "Study Hour (90 min)",
+    "start": "15:30",
+    "end": "17:00"
+   }
+  ]
+ }
+}
