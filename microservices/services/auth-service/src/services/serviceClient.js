@@ -2,13 +2,13 @@
 // if the other service is down, the holiday/exam is still saved and we just log it.
 import { config } from '../config/index.js';
 
-async function call(baseUrl, name, path, body) {
+async function call(baseUrl, name, path, body, timeoutMs = 10000) {
   try {
     const res = await fetch(`${baseUrl}${path}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-internal-token': config.internalToken },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -24,7 +24,7 @@ async function call(baseUrl, name, path, body) {
 
 // lesson-plan-service: move the lessons planned on a sudden holiday → { affectedCount, movedCount, teacherIds }
 export const shiftLessonsForHoliday = (schoolId, date) =>
-  call(config.lessonPlanUrl, 'lesson-plan-service', '/internal/holiday-shift', { schoolId, date });
+  call(config.lessonPlanUrl, 'lesson-plan-service', '/internal/holiday-shift', { schoolId, date }, 60000);
 
 // approval-service: bell notification for these people
 export const notify = (schoolId, to, title, text, link) =>
