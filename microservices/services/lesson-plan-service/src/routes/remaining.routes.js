@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import mongoose from "mongoose";
 import { z } from "zod";
@@ -15,6 +14,7 @@ import {
 import { loadSchool } from "../services/plans.service.js";
 import { continueCore } from "../services/completion-scheduling.service.js";
 import { weekdayIndex, todayISO } from "../utils/dates.js";
+import { coverageReport, teacherReport } from "../services/reports.service.js";
 
 const router = Router();
 
@@ -612,75 +612,11 @@ router.get(
   "/reports/coverage",
   allow("teacher", "hod", "principal", "admin"),
   async (req, res) => {
-    const query = {
-      schoolId: req.ctx.schoolId,
-      topicId: { $exists: true, $nin: [null, ""] }
-    };
-
-    if (req.user.role === "teacher") {
-      query.teacherId = req.user.id;
-    } else if (req.query.teacherId) {
-      query.teacherId = req.query.teacherId;
-    }
-
-    if (req.query.sectionId) {
-      query.sectionId = req.query.sectionId;
-    }
-
-    if (req.query.subjectId) {
-      query.subjectId = req.query.subjectId;
-    }
-
-    const items = await PlanItem.find(query).lean();
-    const groups = new Map();
-
-    for (const item of items) {
-      const key = [
-        item.teacherId,
-        item.sectionId,
-        item.subjectId
-      ].join("|");
-
-      if (!groups.has(key)) {
-        groups.set(key, {
-          teacherId: item.teacherId,
-          sectionId: item.sectionId,
-          subjectId: item.subjectId,
-          plannedTopics: new Set(),
-          completedTopics: new Set()
-        });
-      }
-
-      const group = groups.get(key);
-
-      if (!INACTIVE.includes(item.status)) {
-        group.plannedTopics.add(item.topicId);
-      }
-
-      if (item.status === LESSON_STATUS.COMPLETED) {
-        group.completedTopics.add(item.topicId);
-      }
-    }
-
-    const coverage = [...groups.values()].map(group => {
-      const total = group.plannedTopics.size;
-
-      const completed = [...group.completedTopics]
-        .filter(id => group.plannedTopics.has(id)).length;
-
-      return {
-        teacherId: group.teacherId,
-        sectionId: group.sectionId,
-        subjectId: group.subjectId,
-        plannedTopics: total,
-        completedTopics: completed,
-        plannedTopicCoverage: total
-          ? Math.round((completed / total) * 100)
-          : 0
-      };
+    const rows = await coverageReport(req.ctx.schoolId, req.user, {
+      sectionId: req.query.sectionId,
+      subjectId: req.query.subjectId
     });
-
-    ok(res, { coverage }, "Coverage report loaded");
+    ok(res, rows, "Coverage report loaded");
   }
 );
 
@@ -690,52 +626,10 @@ router.get(
 
 router.get(
   "/reports/teachers",
-  allow("hod", "principal", "admin"),
+  allow("teacher", "hod", "principal", "admin"),
   async (req, res) => {
-    const query = {
-      schoolId: req.ctx.schoolId
-    };
-
-    if (req.query.teacherId) {
-      query.teacherId = req.query.teacherId;
-    }
-
-    const items = await PlanItem.find(query).lean();
-    const groups = new Map();
-
-    for (const item of items) {
-      if (!groups.has(item.teacherId)) {
-        groups.set(item.teacherId, {
-          teacherId: item.teacherId,
-          total: 0,
-          planned: 0,
-          completed: 0,
-          partial: 0,
-          notDone: 0,
-          cancelled: 0,
-          rescheduled: 0
-        });
-      }
-
-      const group = groups.get(item.teacherId);
-
-      group.total++;
-
-      if (item.status === LESSON_STATUS.PLANNED) group.planned++;
-      if (item.status === LESSON_STATUS.COMPLETED) group.completed++;
-      if (item.status === LESSON_STATUS.PARTIAL) group.partial++;
-      if (item.status === LESSON_STATUS.NOT_DONE) group.notDone++;
-      if (item.status === LESSON_STATUS.CANCELLED) group.cancelled++;
-      if (item.status === LESSON_STATUS.RESCHEDULED) group.rescheduled++;
-    }
-
-    ok(res, {
-      teachers: [...groups.values()]
-    }, "Teacher report loaded");
+    ok(res, await teacherReport(req.ctx.schoolId, req.user), "Teacher report loaded");
   }
 );
 
 export default router;
-
-
-
