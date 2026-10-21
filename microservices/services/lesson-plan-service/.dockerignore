@@ -1,5 +1,5 @@
-
 node_modules
+dist
 .env
 .env.*
 .git
@@ -9,3 +9,4 @@ Dockerfile
 coverage
 tests
 *.log
+npm-debug.log
