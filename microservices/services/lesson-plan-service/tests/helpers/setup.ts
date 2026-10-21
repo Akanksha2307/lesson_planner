@@ -19,8 +19,32 @@ export const demoSchool = () => fixture("school.json");
 export const demoSyllabus = () => fixture("syllabus-c8-sci.json");
 
 // A login token like auth-service makes
-export const tokenFor = (id: any, role: any, schoolId = "one") =>
-  `Bearer ${jwt.sign({ sub: id, role, name: id, schoolId }, JWT_SECRET, { expiresIn: "1h" })}`;
+
+// Generate a test access token matching the Auth Service JWT contract.
+export const tokenFor = (
+  id: string,
+  role: string,
+  schoolId = "one"
+): string => {
+  const token = jwt.sign(
+    {
+      sub: id,
+      role,
+      name: id,
+      schoolId,
+      type: "access"
+    },
+    JWT_SECRET,
+    {
+      algorithm: "HS256",
+      issuer: "qshikshak-auth",
+      audience: "qshikshak",
+      expiresIn: "1h"
+    }
+  );
+
+  return `Bearer ${token}`;
+};
 
 // Transactions (holiday shift, cancel/move/swap …) need a replica set.
 // With TEST_MONGO_URI pointing at a plain server, set TEST_TRANSACTIONS=no to skip those tests.

@@ -10,6 +10,7 @@ const internalAuth = (req: Request, res: Response, next: NextFunction): void => 
   if (!expected) {
     res.status(503).json({
       success: false,
+      data: null,
       message: "Internal authentication is not configured"
     });
     return;
@@ -18,6 +19,7 @@ const internalAuth = (req: Request, res: Response, next: NextFunction): void => 
   if (!received) {
     res.status(401).json({
       success: false,
+      data: null,
       message: "Internal token required"
     });
     return;
@@ -29,6 +31,7 @@ const internalAuth = (req: Request, res: Response, next: NextFunction): void => 
   if (a.length !== b.length || !timingSafeEqual(a, b)) {
     res.status(403).json({
       success: false,
+      data: null,
       message: "Invalid internal token"
     });
     return;

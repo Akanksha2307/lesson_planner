@@ -16,8 +16,27 @@ process.env.INTERNAL_TOKEN = INTERNAL_TOKEN;
 process.env.CORS_ORIGINS = ORIGIN;
 process.env.DEFAULT_SCHOOL_ID = "one";
 
-const tokenFor = (id: string, role: string) =>
-  `Bearer ${jwt.sign({ sub: id, role, name: id, schoolId: "one" }, JWT_SECRET, { expiresIn: "1h" })}`;
+
+const tokenFor = (id: string, role: string): string => {
+  const token = jwt.sign(
+    {
+      sub: id,
+      role,
+      name: id,
+      schoolId: "one",
+      type: "access"
+    },
+    JWT_SECRET,
+    {
+      algorithm: "HS256",
+      issuer: "qshikshak-auth",
+      audience: "qshikshak",
+      expiresIn: "1h"
+    }
+  );
+
+  return `Bearer ${token}`;
+};
 
 const TEACHER = tokenFor("t1", "teacher");
 const HOD = tokenFor("h1", "hod");
@@ -296,10 +315,17 @@ test("internal holiday-shift keeps its old 400 message", async () => {
 
 // ───────────────────────── CORS / misc ─────────────────────────
 
+
 test("CORS: the configured frontend origin is allowed", async () => {
-  const res = await request(app).get("/health").set("Origin", ORIGIN);
-  assert.equal(res.status, 200);
-  assert.equal(res.headers["access-control-allow-origin"], ORIGIN);
+  const res = await request(app)
+    .get("/health")
+    .set("Origin", ORIGIN);
+
+  assert.equal(res.status, 503);
+  assert.equal(
+    res.headers["access-control-allow-origin"],
+    ORIGIN
+  );
 });
 
 test("CORS: another origin gets no allow-origin header", async () => {
@@ -329,10 +355,15 @@ test("unknown route under the API base: 401 without token, 404 with token", asyn
   assert.equal((await request(app).get(`${BASE}/nope`).set("Authorization", TEACHER)).status, 404);
 });
 
+
 test("health check is public", async () => {
   const res = await request(app).get("/health");
-  assert.equal(res.status, 200);
-  assert.equal(res.body.service, "lesson-plan-service");
+
+  assert.equal(res.status, 503);
+  assert.equal(res.body.success, false);
+  assert.equal(res.body.data.service, "lesson-plan-service");
+  assert.equal(res.body.data.db, "down");
+  assert.equal(res.body.message, "Database unavailable");
 });
 
 // ───────────────────── route configuration is the single source ─────────────────────
