@@ -1,0 +1,1334 @@
+{
+  "exportedAt": "2026-10-06T09:53:05.316Z",
+  "classes": [
+    {
+      "id": "c7",
+      "name": "Class 7"
+    },
+    {
+      "id": "c8",
+      "name": "Class 8"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s7a",
+      "classId": "c7",
+      "name": "A"
+    },
+    {
+      "id": "s8a",
+      "classId": "c8",
+      "name": "A"
+    },
+    {
+      "id": "s8b",
+      "classId": "c8",
+      "name": "B"
+    }
+  ],
+  "departments": [
+    {
+      "id": "d-sci",
+      "name": "Science",
+      "hodId": "t3"
+    },
+    {
+      "id": "d-math",
+      "name": "Mathematics",
+      "hodId": "t3"
+    },
+    {
+      "id": "d-lang",
+      "name": "Languages",
+      "hodId": "t3"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "sci",
+      "name": "Science",
+      "departmentId": "d-sci"
+    },
+    {
+      "id": "math",
+      "name": "Mathematics",
+      "departmentId": "d-math"
+    },
+    {
+      "id": "eng",
+      "name": "English",
+      "departmentId": "d-lang"
+    }
+  ],
+  "staff": [
+    {
+      "id": "t1",
+      "name": "Priya Sharma",
+      "role": "teacher",
+      "departmentId": "d-sci"
+    },
+    {
+      "id": "t2",
+      "name": "Ravi Kumar",
+      "role": "teacher",
+      "departmentId": "d-math"
+    },
+    {
+      "id": "t5",
+      "name": "Kavya Reddy",
+      "role": "teacher",
+      "departmentId": "d-lang"
+    },
+    {
+      "id": "t3",
+      "name": "Anitha Rao",
+      "role": "hod",
+      "departmentId": "d-sci"
+    },
+    {
+      "id": "a1",
+      "name": "Suresh Varma",
+      "role": "admin"
+    },
+    {
+      "id": "p1",
+      "name": "Dr. Meena Iyer",
+      "role": "principal"
+    },
+    {
+      "id": "pa1",
+      "name": "Demo Parent",
+      "role": "parent"
+    }
+  ],
+  "timetable": [
+    {
+      "sectionId": "s8a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 0,
+      "periodId": "p1"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 1,
+      "periodId": "p3"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 2,
+      "periodId": "p2"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 3,
+      "periodId": "p6"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 4,
+      "periodId": "p4"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 5,
+      "periodId": "p2"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 0,
+      "periodId": "p4"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 1,
+      "periodId": "p6"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 2,
+      "periodId": "p5"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 4,
+      "periodId": "p1"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 5,
+      "periodId": "p4"
+    },
+    {
+      "sectionId": "s7a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 0,
+      "periodId": "p6"
+    },
+    {
+      "sectionId": "s7a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 2,
+      "periodId": "p7"
+    },
+    {
+      "sectionId": "s7a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 3,
+      "periodId": "p2"
+    },
+    {
+      "sectionId": "s7a",
+      "subjectId": "sci",
+      "teacherId": "t1",
+      "weekday": 4,
+      "periodId": "p7"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 0,
+      "periodId": "p2"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 1,
+      "periodId": "p1"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 2,
+      "periodId": "p3"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 3,
+      "periodId": "p1"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 4,
+      "periodId": "p2"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 5,
+      "periodId": "p1"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 0,
+      "periodId": "p3"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 1,
+      "periodId": "p4"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 2,
+      "periodId": "p1"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 3,
+      "periodId": "p5"
+    },
+    {
+      "sectionId": "s8b",
+      "subjectId": "math",
+      "teacherId": "t2",
+      "weekday": 4,
+      "periodId": "p6"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "eng",
+      "teacherId": "t5",
+      "weekday": 0,
+      "periodId": "p5"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "eng",
+      "teacherId": "t5",
+      "weekday": 1,
+      "periodId": "p2"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "eng",
+      "teacherId": "t5",
+      "weekday": 2,
+      "periodId": "p4"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "eng",
+      "teacherId": "t5",
+      "weekday": 3,
+      "periodId": "p3"
+    },
+    {
+      "sectionId": "s8a",
+      "subjectId": "eng",
+      "teacherId": "t5",
+      "weekday": 4,
+      "periodId": "p5"
+    }
+  ],
+  "holidays": [
+    {
+      "date": "2026-10-14",
+      "title": "Annual Day"
+    },
+    {
+      "date": "2026-10-02",
+      "title": "Gandhi Jayanti"
+    },
+    {
+      "date": "2026-08-15",
+      "title": "Independence Day"
+    },
+    {
+      "date": "2026-01-26",
+      "title": "Republic Day"
+    }
+  ],
+  "exams": [
+    {
+      "date": "2026-10-26",
+      "title": "Unit Test 2"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Unit Test 2"
+    }
+  ],
+  "templates": [
+    {
+      "id": "tpl-ssc",
+      "name": "SSC standard",
+      "board": "SSC",
+      "isDefault": true,
+      "fields": [
+        {
+          "key": "objectives",
+          "label": "Learning objectives",
+          "type": "list",
+          "enabled": true,
+          "required": true
+        },
+        {
+          "key": "prerequisites",
+          "label": "Prerequisites",
+          "type": "text",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "method",
+          "label": "Teaching method",
+          "type": "method",
+          "enabled": true,
+          "required": true
+        },
+        {
+          "key": "activities",
+          "label": "Activities / procedure",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "resources",
+          "label": "Resources",
+          "type": "resources",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "assessment",
+          "label": "Check for understanding",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "homework",
+          "label": "Homework",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "tpl-cbse",
+      "name": "CBSE competency-based",
+      "board": "CBSE",
+      "isDefault": false,
+      "fields": [
+        {
+          "key": "objectives",
+          "label": "Learning objectives",
+          "type": "list",
+          "enabled": true,
+          "required": true
+        },
+        {
+          "key": "prerequisites",
+          "label": "Prerequisites",
+          "type": "text",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "method",
+          "label": "Teaching method",
+          "type": "method",
+          "enabled": true,
+          "required": true
+        },
+        {
+          "key": "activities",
+          "label": "Activities / procedure",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "resources",
+          "label": "Resources",
+          "type": "resources",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "assessment",
+          "label": "Check for understanding",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "homework",
+          "label": "Homework",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "competency",
+          "label": "Learning outcome code",
+          "type": "text",
+          "enabled": true,
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "tpl-icse",
+      "name": "ICSE standard",
+      "board": "ICSE",
+      "isDefault": false,
+      "fields": [
+        {
+          "key": "objectives",
+          "label": "Learning objectives",
+          "type": "list",
+          "enabled": true,
+          "required": true
+        },
+        {
+          "key": "prerequisites",
+          "label": "Prerequisites",
+          "type": "text",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "method",
+          "label": "Teaching method",
+          "type": "method",
+          "enabled": true,
+          "required": true
+        },
+        {
+          "key": "activities",
+          "label": "Activities / procedure",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "resources",
+          "label": "Resources",
+          "type": "resources",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "assessment",
+          "label": "Check for understanding",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "homework",
+          "label": "Homework",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        },
+        {
+          "key": "boardWork",
+          "label": "Board work",
+          "type": "textarea",
+          "enabled": true,
+          "required": false
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "approvalRequired": true,
+    "approver": "hod",
+    "submissionDay": "Saturday",
+    "dailyReminderTime": "18:00",
+    "autoShift": true,
+    "skipHolidays": true,
+    "skipExams": true,
+    "whatsappHomework": false,
+    "editAfterApproval": "reapprove"
+  },
+  "bellSchedule": [
+    {
+      "id": "asm",
+      "type": "assembly",
+      "label": "Assembly (20 min)",
+      "start": "08:40",
+      "end": "09:00"
+    },
+    {
+      "id": "p1",
+      "type": "period",
+      "label": "Period 1",
+      "start": "09:00",
+      "end": "09:40"
+    },
+    {
+      "id": "p2",
+      "type": "period",
+      "label": "Period 2",
+      "start": "09:40",
+      "end": "10:20"
+    },
+    {
+      "id": "p3",
+      "type": "period",
+      "label": "Period 3",
+      "start": "10:20",
+      "end": "11:00"
+    },
+    {
+      "id": "b1",
+      "type": "break",
+      "label": "Morning Session Break (15 min)",
+      "start": "11:00",
+      "end": "11:15"
+    },
+    {
+      "id": "p4",
+      "type": "period",
+      "label": "Period 4",
+      "start": "11:15",
+      "end": "11:55"
+    },
+    {
+      "id": "p5",
+      "type": "period",
+      "label": "Period 5",
+      "start": "11:55",
+      "end": "12:35"
+    },
+    {
+      "id": "lunch",
+      "type": "break",
+      "label": "Lunch Break (35 min)",
+      "start": "12:35",
+      "end": "13:10"
+    },
+    {
+      "id": "p6",
+      "type": "period",
+      "label": "Period 6",
+      "start": "13:10",
+      "end": "14:00"
+    },
+    {
+      "id": "p7",
+      "type": "period",
+      "label": "Period 7",
+      "start": "14:00",
+      "end": "14:40"
+    },
+    {
+      "id": "p8",
+      "type": "period",
+      "label": "Period 8",
+      "start": "14:40",
+      "end": "15:20"
+    },
+    {
+      "id": "b2",
+      "type": "break",
+      "label": "Afternoon Session Break (10 min)",
+      "start": "15:20",
+      "end": "15:30"
+    },
+    {
+      "id": "study",
+      "type": "study",
+      "label": "Study Hour (90 min)",
+      "start": "15:30",
+      "end": "17:00"
+    }
+  ],
+  "syllabus": [
+    {
+      "id": "syl-c8-sci",
+      "classId": "c8",
+      "subjectId": "sci",
+      "board": "SSC",
+      "chapters": [
+        {
+          "id": "ch-0-0",
+          "title": "Crop Production and Management",
+          "order": 1,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-0-0-0",
+              "chapterId": "ch-0-0",
+              "title": "Agricultural practices",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Kharif and rabi crops",
+                "Basic practices of crop production"
+              ]
+            },
+            {
+              "id": "tp-0-0-1",
+              "chapterId": "ch-0-0",
+              "title": "Preparation of soil",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Ploughing and tilling",
+                "Levelling"
+              ]
+            },
+            {
+              "id": "tp-0-0-2",
+              "chapterId": "ch-0-0",
+              "title": "Sowing and adding manure",
+              "order": 3,
+              "estPeriods": 2,
+              "subtopics": [
+                "Seed selection",
+                "Manure vs fertilisers"
+              ]
+            },
+            {
+              "id": "tp-0-0-3",
+              "chapterId": "ch-0-0",
+              "title": "Irrigation and harvesting",
+              "order": 4,
+              "estPeriods": 2,
+              "subtopics": [
+                "Sources of irrigation",
+                "Modern methods",
+                "Harvesting and storage"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-0-1",
+          "title": "Microorganisms: Friend and Foe",
+          "order": 2,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-0-1-0",
+              "chapterId": "ch-0-1",
+              "title": "Types of microorganisms",
+              "order": 1,
+              "estPeriods": 2,
+              "subtopics": [
+                "Bacteria and fungi",
+                "Protozoa and algae",
+                "Viruses"
+              ]
+            },
+            {
+              "id": "tp-0-1-1",
+              "chapterId": "ch-0-1",
+              "title": "Useful microorganisms",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Making curd and bread",
+                "Medicines and vaccines"
+              ]
+            },
+            {
+              "id": "tp-0-1-2",
+              "chapterId": "ch-0-1",
+              "title": "Harmful microorganisms and diseases",
+              "order": 3,
+              "estPeriods": 2,
+              "subtopics": [
+                "Diseases in humans",
+                "Diseases in plants and animals"
+              ]
+            },
+            {
+              "id": "tp-0-1-3",
+              "chapterId": "ch-0-1",
+              "title": "Food preservation",
+              "order": 4,
+              "estPeriods": 1,
+              "subtopics": [
+                "Chemical methods",
+                "Heating, cooling and storage"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-0-2",
+          "title": "Force and Pressure",
+          "order": 3,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-0-2-0",
+              "chapterId": "ch-0-2",
+              "title": "Force – a push or a pull",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Definition of force",
+                "Interaction of forces"
+              ]
+            },
+            {
+              "id": "tp-0-2-1",
+              "chapterId": "ch-0-2",
+              "title": "Types of forces",
+              "order": 2,
+              "estPeriods": 2,
+              "subtopics": [
+                "Contact forces",
+                "Non-contact forces",
+                "Examples from daily life"
+              ]
+            },
+            {
+              "id": "tp-0-2-2",
+              "chapterId": "ch-0-2",
+              "title": "Pressure",
+              "order": 3,
+              "estPeriods": 2,
+              "subtopics": [
+                "Pressure = force / area",
+                "Pressure in liquids and gases"
+              ]
+            },
+            {
+              "id": "tp-0-2-3",
+              "chapterId": "ch-0-2",
+              "title": "Atmospheric pressure",
+              "order": 4,
+              "estPeriods": 1,
+              "subtopics": [
+                "Evidence of atmospheric pressure"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-0-3",
+          "title": "Friction",
+          "order": 4,
+          "term": "Term 2",
+          "topics": [
+            {
+              "id": "tp-0-3-0",
+              "chapterId": "ch-0-3",
+              "title": "Factors affecting friction",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Nature of surfaces",
+                "Static and sliding friction"
+              ]
+            },
+            {
+              "id": "tp-0-3-1",
+              "chapterId": "ch-0-3",
+              "title": "Friction: a necessary evil",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Advantages",
+                "Disadvantages"
+              ]
+            },
+            {
+              "id": "tp-0-3-2",
+              "chapterId": "ch-0-3",
+              "title": "Increasing and reducing friction",
+              "order": 3,
+              "estPeriods": 2,
+              "subtopics": [
+                "Lubricants",
+                "Ball bearings",
+                "Fluid friction"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-0-4",
+          "title": "Sound",
+          "order": 5,
+          "term": "Term 2",
+          "topics": [
+            {
+              "id": "tp-0-4-0",
+              "chapterId": "ch-0-4",
+              "title": "Sound is produced by vibration",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Vibrating objects",
+                "Human voice"
+              ]
+            },
+            {
+              "id": "tp-0-4-1",
+              "chapterId": "ch-0-4",
+              "title": "How sound travels",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Medium for sound",
+                "Hearing"
+              ]
+            },
+            {
+              "id": "tp-0-4-2",
+              "chapterId": "ch-0-4",
+              "title": "Amplitude, frequency and pitch",
+              "order": 3,
+              "estPeriods": 2,
+              "subtopics": [
+                "Amplitude and loudness",
+                "Frequency and pitch"
+              ]
+            },
+            {
+              "id": "tp-0-4-3",
+              "chapterId": "ch-0-4",
+              "title": "Noise pollution",
+              "order": 4,
+              "estPeriods": 1,
+              "subtopics": [
+                "Harmful effects",
+                "Ways to reduce noise"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-0-5",
+          "title": "Light",
+          "order": 6,
+          "term": "Term 2",
+          "topics": [
+            {
+              "id": "tp-0-5-0",
+              "chapterId": "ch-0-5",
+              "title": "Laws of reflection",
+              "order": 1,
+              "estPeriods": 2,
+              "subtopics": [
+                "Angle of incidence and reflection",
+                "Regular and diffused reflection"
+              ]
+            },
+            {
+              "id": "tp-0-5-1",
+              "chapterId": "ch-0-5",
+              "title": "Multiple reflection",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Kaleidoscope",
+                "Periscope"
+              ]
+            },
+            {
+              "id": "tp-0-5-2",
+              "chapterId": "ch-0-5",
+              "title": "The human eye",
+              "order": 3,
+              "estPeriods": 2,
+              "subtopics": [
+                "Parts of the eye",
+                "Care of eyes"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "syl-c8-math",
+      "classId": "c8",
+      "subjectId": "math",
+      "board": "SSC",
+      "chapters": [
+        {
+          "id": "ch-1-0",
+          "title": "Rational Numbers",
+          "order": 1,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-1-0-0",
+              "chapterId": "ch-1-0",
+              "title": "Properties of rational numbers",
+              "order": 1,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to properties of rational numbers",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-0-1",
+              "chapterId": "ch-1-0",
+              "title": "Representation on number line",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to representation on number line",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-0-2",
+              "chapterId": "ch-1-0",
+              "title": "Rational numbers between two numbers",
+              "order": 3,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to rational numbers between two numbers",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-1-1",
+          "title": "Linear Equations in One Variable",
+          "order": 2,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-1-1-0",
+              "chapterId": "ch-1-1",
+              "title": "Solving equations",
+              "order": 1,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to solving equations",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-1-1",
+              "chapterId": "ch-1-1",
+              "title": "Word problems",
+              "order": 2,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to word problems",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-1-2",
+              "chapterId": "ch-1-1",
+              "title": "Reducing equations to simpler form",
+              "order": 3,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to reducing equations to simpler form",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-1-2",
+          "title": "Understanding Quadrilaterals",
+          "order": 3,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-1-2-0",
+              "chapterId": "ch-1-2",
+              "title": "Polygons and angle sum",
+              "order": 1,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to polygons and angle sum",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-2-1",
+              "chapterId": "ch-1-2",
+              "title": "Kinds of quadrilaterals",
+              "order": 2,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to kinds of quadrilaterals",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-2-2",
+              "chapterId": "ch-1-2",
+              "title": "Special parallelograms",
+              "order": 3,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to special parallelograms",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-1-3",
+          "title": "Squares and Square Roots",
+          "order": 4,
+          "term": "Term 2",
+          "topics": [
+            {
+              "id": "tp-1-3-0",
+              "chapterId": "ch-1-3",
+              "title": "Properties of square numbers",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to properties of square numbers",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-3-1",
+              "chapterId": "ch-1-3",
+              "title": "Finding square roots",
+              "order": 2,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to finding square roots",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-3-2",
+              "chapterId": "ch-1-3",
+              "title": "Square roots of decimals",
+              "order": 3,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to square roots of decimals",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-1-4",
+          "title": "Comparing Quantities",
+          "order": 5,
+          "term": "Term 2",
+          "topics": [
+            {
+              "id": "tp-1-4-0",
+              "chapterId": "ch-1-4",
+              "title": "Percentages and discounts",
+              "order": 1,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to percentages and discounts",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-1-4-1",
+              "chapterId": "ch-1-4",
+              "title": "Simple and compound interest",
+              "order": 2,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to simple and compound interest",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "syl-c7-sci",
+      "classId": "c7",
+      "subjectId": "sci",
+      "board": "SSC",
+      "chapters": [
+        {
+          "id": "ch-2-0",
+          "title": "Nutrition in Plants",
+          "order": 1,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-2-0-0",
+              "chapterId": "ch-2-0",
+              "title": "Modes of nutrition",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to modes of nutrition",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-2-0-1",
+              "chapterId": "ch-2-0",
+              "title": "Photosynthesis",
+              "order": 2,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to photosynthesis",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-2-0-2",
+              "chapterId": "ch-2-0",
+              "title": "Other modes of nutrition",
+              "order": 3,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to other modes of nutrition",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-2-1",
+          "title": "Nutrition in Animals",
+          "order": 2,
+          "term": "Term 1",
+          "topics": [
+            {
+              "id": "tp-2-1-0",
+              "chapterId": "ch-2-1",
+              "title": "Digestion in humans",
+              "order": 1,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to digestion in humans",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-2-1-1",
+              "chapterId": "ch-2-1",
+              "title": "Digestion in ruminants",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to digestion in ruminants",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-2-2",
+          "title": "Heat",
+          "order": 3,
+          "term": "Term 2",
+          "topics": [
+            {
+              "id": "tp-2-2-0",
+              "chapterId": "ch-2-2",
+              "title": "Hot and cold",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to hot and cold",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-2-2-1",
+              "chapterId": "ch-2-2",
+              "title": "Measuring temperature",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to measuring temperature",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-2-2-2",
+              "chapterId": "ch-2-2",
+              "title": "Transfer of heat",
+              "order": 3,
+              "estPeriods": 2,
+              "subtopics": [
+                "Introduction to transfer of heat",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ch-2-3",
+          "title": "Acids, Bases and Salts",
+          "order": 4,
+          "term": "Term 2",
+          "topics": [
+            {
+              "id": "tp-2-3-0",
+              "chapterId": "ch-2-3",
+              "title": "Acids and bases",
+              "order": 1,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to acids and bases",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-2-3-1",
+              "chapterId": "ch-2-3",
+              "title": "Natural indicators",
+              "order": 2,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to natural indicators",
+                "Worked examples",
+                "Practice"
+              ]
+            },
+            {
+              "id": "tp-2-3-2",
+              "chapterId": "ch-2-3",
+              "title": "Neutralisation",
+              "order": 3,
+              "estPeriods": 1,
+              "subtopics": [
+                "Introduction to neutralisation",
+                "Worked examples",
+                "Practice"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

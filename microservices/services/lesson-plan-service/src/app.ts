@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import mongoose from "mongoose";
 
 import { config } from "./config/index";
 import authenticate from "./middleware/auth.middleware";
@@ -28,14 +29,23 @@ app.use(express.json({ limit: "2mb" }));
 app.use(morgan("dev"));
 
 // Health check
+
+// Health check
 app.get("/health", (req: Request, res: Response) => {
-  res.status(200).json({
-    success: true,
-    service: "lesson-plan-service",
-    status: "running",
-    port: config.port
+  const dbConnected = mongoose.connection.readyState === 1;
+
+  res.status(dbConnected ? 200 : 503).json({
+    success: dbConnected,
+    data: {
+      service: "lesson-plan-service",
+      db: dbConnected ? "up" : "down"
+    },
+    message: dbConnected
+      ? "Service healthy"
+      : "Database unavailable"
   });
 });
+
 
 // Internal microservice routes (x-internal-token)
 app.use("/internal", internalRoutes);
@@ -47,13 +57,14 @@ const BASE = "/api/lesson-planner";
 app.use(BASE, authenticate, apiRoutes);
 
 // 404 handler
+// 404 handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
+    data: null,
     message: "Route not found"
   });
 });
-
 // Global error handler
 app.use(errorMiddleware);
 

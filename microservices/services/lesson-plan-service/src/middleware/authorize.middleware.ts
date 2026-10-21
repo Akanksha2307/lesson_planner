@@ -15,18 +15,20 @@ export const authorizeRoute = (name: RouteName): RequestHandler => {
 
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      res.status(401).json({
-        success: false,
-        message: "Authentication required"
-      });
+     res.status(401).json({
+  success: false,
+  data: null,
+  message: "Authentication required"
+});
       return;
     }
 
     if (roles && !(roles as readonly string[]).includes(req.user.role)) {
       res.status(403).json({
-        success: false,
-        message: "Access denied"
-      });
+  success: false,
+  data: null,
+  message: "Access denied"
+});
       return;
     }
 
