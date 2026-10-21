@@ -1,4 +1,10 @@
 node_modules
+dist
+tests
+coverage
 .env
-.env.docker
-npm-debug.log
+.env.*
+!.env.example
+*.tar
+*.log
+.git
