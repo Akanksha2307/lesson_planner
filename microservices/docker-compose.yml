@@ -1,5 +1,6 @@
-# Start everything:  docker compose up --build -d      Stop:  docker compose down
+# Start everything:  docker compose up --build      Stop:  docker compose down
 # Each service needs its .env.docker file (not in Git – values are shared privately).
+# Inside compose, services find each other by name (http://auth-service:5001 …).
 services:
   auth-service:
     build: ./services/auth-service
@@ -8,29 +9,30 @@ services:
     ports:
       - "5001:5001"
     restart: unless-stopped
-    environment:
-      LESSON_PLAN_URL: http://lesson-plan-service:5002
-      APPROVAL_URL: http://approval-service:5003
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   lesson-plan-service:
     build: ./services/lesson-plan-service
     image: qshikshak/lesson-plan-service
     env_file: ./services/lesson-plan-service/.env.docker
     environment:
-      # Inside compose it finds auth-service by its name
-      AUTH_SERVICE_URL: http://auth-service:5001
+      APPROVAL_URL: http://approval-service:5003
     ports:
       - "5002:5002"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5002/health"]
-      interval: 30s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
     depends_on:
       auth-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  approval-service:
+    build: ./services/approval-service
+    image: qshikshak/approval-service
+    env_file: ./services/approval-service/.env.docker
+    environment:
+      LESSON_PLAN_URL: http://lesson-plan-service:5002
+    ports:
+      - "5003:5003"
+    depends_on:
+      lesson-plan-service:
         condition: service_healthy
     restart: unless-stopped
 
@@ -41,10 +43,7 @@ services:
     environment:
       AUTH_URL: http://auth-service:5001
       LESSON_PLAN_URL: http://lesson-plan-service:5002
-      # Not in compose yet – reach it on the laptop until it is added
       APPROVAL_URL: http://approval-service:5003
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "5000:5000"
     depends_on:
@@ -53,27 +52,5 @@ services:
       lesson-plan-service:
         condition: service_healthy
       approval-service:
-        condition: service_healthy
-    restart: unless-stopped
-
-  approval-service:
-    build: ./services/approval-service
-    image: qshikshak/approval-service
-    env_file: ./services/approval-service/.env.docker
-    environment:
-      AUTH_SERVICE_URL: http://auth-service:5001
-      LESSON_PLAN_URL: http://lesson-plan-service:5002
-    ports:
-      - "5003:5003"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5003/health"]
-      interval: 30s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
-    depends_on:
-      auth-service:
-        condition: service_healthy
-      lesson-plan-service:
         condition: service_healthy
     restart: unless-stopped

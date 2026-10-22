@@ -1,4 +1,5 @@
 import { RequestContext, AuthUser } from "../types";
+import { notify } from "./notification-client.service";
 
 import {
   Plan,
@@ -1033,6 +1034,49 @@ export async function submitPlan(ctx: RequestContext, user: AuthUser, id: any) {
   plan.submittedAt = new Date();
 
   await plan.save();
+  await notifyReviewers(ctx.schoolId, plan);
 
   return plan.toJSON();
+}
+
+// -----------------------------------------
+// Bell notification for the reviewer
+// -----------------------------------------
+// The HOD of the subject's department gets it. The principal(s) get it instead when
+// the department has no HOD, the HOD is inactive, or settings say only the principal approves.
+// Never breaks the submit: if approval-service is down, it is only logged.
+async function notifyReviewers(schoolId: string, plan: any) {
+  try {
+    const school = await getSchoolData(schoolId);
+    const byId = (list: any[] = []): Map<string, any> =>
+      new Map(list.map((x: any) => [x.id, x]));
+    const staff = byId(school.staff);
+
+    const subject = byId(school.subjects).get(plan.subjectId);
+    const department = byId(school.departments).get(subject?.departmentId);
+    const hod = department?.hodId ? staff.get(department.hodId) : undefined;
+    const hodAvailable = !!hod && hod.active !== false;
+    const principalOnly = school.settings?.approver === "principal";
+
+    const principals: string[] = (school.staff || [])
+      .filter((s: any) => s.role === "principal" && s.active !== false)
+      .map((s: any) => s.id);
+    const to: string[] = principalOnly || !hodAvailable ? principals : [hod.id];
+
+    const section = byId(school.sections).get(plan.sectionId);
+    const cls = byId(school.classes).get(section?.classId ?? plan.classId);
+    const label =
+      `${cls?.name ?? ""}${section ? `-${section.name}` : ""} ${subject?.name ?? ""}`.trim() || "lesson";
+    const teacher = staff.get(plan.teacherId)?.name || "A teacher";
+
+    await notify(
+      schoolId,
+      to,
+      "Plan waiting for approval",
+      `${teacher} submitted the ${label} plan for your review.`,
+      `/lesson-planner/plans/${plan.id}`
+    );
+  } catch (err: any) {
+    console.warn(`[lesson-plan-service] could not notify reviewers: ${err.message}`);
+  }
 }
