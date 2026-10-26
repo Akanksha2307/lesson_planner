@@ -65,7 +65,7 @@ export interface RouteDefinition {
   messageFromFirstIssue?: boolean;
 }
 
-const { STAFF, PLANNERS, SYLLABUS_EDITORS, TEACHER_ONLY, MANAGERS } = ROLE_GROUPS;
+const { STAFF, PLANNERS, SYLLABUS_EDITORS, TEACHER_ONLY, ARRANGERS, MANAGERS } = ROLE_GROUPS;
 
 export const routeConfig = {
   // ───────────── Syllabus ─────────────
@@ -118,6 +118,12 @@ export const routeConfig = {
   generatePlan: {
     method: "POST",
     path: "/plans/generate",
+    roles: PLANNERS,
+    bodySchema: generateBody
+  },
+  previewPlan: {
+    method: "POST",
+    path: "/plans/preview",
     roles: PLANNERS,
     bodySchema: generateBody
   },
@@ -195,14 +201,14 @@ export const routeConfig = {
   movePlanItem: {
     method: "POST",
     path: "/plan-items/:id/move",
-    roles: TEACHER_ONLY,
+    roles: ARRANGERS,
     paramsSchema: idParams,
     bodySchema: targetBody
   },
   swapPlanItems: {
     method: "POST",
     path: "/plan-items/swap",
-    roles: TEACHER_ONLY,
+    roles: ARRANGERS,
     bodySchema: swapBody
   },
   addPlanItemPeriods: {

@@ -19,12 +19,30 @@ const topicInput = z.object({
   addedAt: z.coerce.date().optional(),
 });
 
-const chapterInput = z.object({
-  id: z.string().optional(),
-  title: name('Chapter name'),
-  term: z.string().trim().max(50).optional(),
-  topics: z.array(topicInput).max(200).default([]),
-});
+// "" or null from the page = no date (the engine decides)
+const optionalDate = (what: string) =>
+  z.preprocess(
+    (v) => (v === '' || v === null ? undefined : v),
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, `${what} must be a date like 2026-08-01`)
+      .refine((s) => !Number.isNaN(new Date(s).getTime()), `${what} is not a real date`)
+      .optional(),
+  );
+
+const chapterInput = z
+  .object({
+    id: z.string().optional(),
+    title: name('Chapter name'),
+    term: z.string().trim().max(50).optional(),
+    startDate: optionalDate('From'),
+    endDate: optionalDate('To'),
+    topics: z.array(topicInput).max(200).default([]),
+  })
+  .refine((c) => !c.startDate || !c.endDate || c.endDate >= c.startDate, {
+    message: "A chapter's To date must be on or after its From date",
+    path: ['endDate'],
+  });
 
 export const saveSyllabusBody = z.object({
   id: z.string().optional(),

@@ -3,14 +3,12 @@ import LessonPlannerHome from '@/pages/lesson-planner/LessonPlannerHome';
 import LoginPage from '@/pages/LoginPage';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useApp } from '@/context/AppContext';
-import {
-  LP_BASE,
-  lpPages,
-} from './routeConfig';
+import { LP_BASE, lpPages } from './routeConfig';
 import TodayPage from '@/pages/lesson-planner/TodayPage';
 import CalendarPage from '@/pages/lesson-planner/CalendarPage';
 import PlansPage from '@/pages/lesson-planner/PlansPage';
 import CreatePlanPage from '@/pages/lesson-planner/CreatePlanPage';
+import AdminCreatePlanPage from '@/pages/lesson-planner/AdminCreatePlanPage';
 import PlanDetailPage from '@/pages/lesson-planner/PlanDetailPage';
 import DeliveryPage from '@/pages/lesson-planner/DeliveryPage';
 import HistoryPage from '@/pages/lesson-planner/HistoryPage';
@@ -48,27 +46,24 @@ function RequireLogin({ children }) {
   const location = useLocation();
   return isLoggedIn ? children : <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
 }
+// Teachers plan for themselves; the admin assigns a plan to a teacher
+function NewPlan() {
+  const { role } = useApp();
+  return role === 'admin' ? <AdminCreatePlanPage /> : <CreatePlanPage />;
+}
+
 // Sends users to their landing page if their role can't open this page
 function Guard({ path, roles, children }) {
   const { role } = useApp();
 
-  const allowed = (
-    roles ||
-    lpPages.find(
-      (p) => p.path === path
-    )?.roles ||
-    []
-  ).includes(role);
+  const allowed = (roles || lpPages.find((p) => p.path === path)?.roles || []).includes(role);
 
-  return allowed
-    ? children
-    : <Navigate to={LP_BASE} replace />;
+  return allowed ? children : <Navigate to={LP_BASE} replace />;
 }
 
 export default function AppRoutes() {
-  
   return (
-        <Routes>
+    <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route
         path={LP_BASE}
@@ -78,10 +73,7 @@ export default function AppRoutes() {
           </RequireLogin>
         }
       >
-        <Route
-  index
-  element={<LessonPlannerHome />}
-/>
+        <Route index element={<LessonPlannerHome />} />
         {Object.entries(pages).map(([path, Page]) => (
           <Route
             key={path}
@@ -96,8 +88,8 @@ export default function AppRoutes() {
         <Route
           path="plans/new"
           element={
-            <Guard roles={['teacher']}>
-              <CreatePlanPage />
+            <Guard roles={['teacher', 'admin']}>
+              <NewPlan />
             </Guard>
           }
         />

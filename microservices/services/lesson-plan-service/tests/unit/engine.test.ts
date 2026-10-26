@@ -102,3 +102,56 @@ describe("byDateAndPeriod", () => {
     assert.deepEqual(items.map((i) => `${i.date} ${i.periodId}`), ["2026-10-19 p2", "2026-10-19 p5", "2026-10-20 p1"]);
   });
 });
+// ── Admin control over order and dates ──
+// Two weeks: Mon p1, Mon p3, Wed p2 each week = 6 free periods
+const twoWeeks = (extra = {}) => plan({ endDate: "2026-11-01", ...extra });
+const ids = (placed: any[]) => placed.map((p) => `${p.date} ${p.topic.id}`);
+
+describe("generatePlanItems – admin choices", () => {
+  test("only the chosen topics, in the chosen order", () => {
+    const chosen = [{ ...syllabus.chapters[1].topics[0], chapterId: "ch2" }, { ...syllabus.chapters[0].topics[1], chapterId: "ch1" }];
+    const { placed, unscheduled } = twoWeeks({ topics: chosen });
+    assert.deepEqual(placed.map((p) => p.topic.id), ["c", "b"]);
+    assert.deepEqual(unscheduled, []);
+  });
+
+  test("periods for one plan can be changed without touching the syllabus", () => {
+    const { placed } = twoWeeks({ periodOverrides: { a: 1, c: 3 } });
+    assert.deepEqual(placed.map((p) => p.topic.id), ["a", "b", "c", "c", "c"]);
+    assert.equal(syllabus.chapters[0].topics[0].estPeriods, 2, "syllabus is unchanged");
+  });
+
+  test("a chapter with From–To dates is placed only inside them", () => {
+    const dated = {
+      chapters: [
+        { ...syllabus.chapters[0], startDate: "2026-10-26", endDate: "2026-11-01" }, // second week
+        syllabus.chapters[1] // no dates
+      ]
+    };
+    const { placed } = twoWeeks({ syllabus: dated });
+    // Week 1 is free for the undated chapter (c); Crops waits for its window
+    assert.deepEqual(ids(placed), ["2026-10-19 c", "2026-10-26 a", "2026-10-26 a", "2026-10-28 b"]);
+  });
+
+  test("a chapter that does not fit in its dates is reported with the reason", () => {
+    const dated = { chapters: [{ ...syllabus.chapters[0], startDate: "2026-10-19", endDate: "2026-10-19" }] };
+    const { placed, unscheduled } = twoWeeks({ syllabus: dated });
+    assert.deepEqual(ids(placed), ["2026-10-19 a", "2026-10-19 a"]);
+    assert.equal(unscheduled.length, 1);
+    assert.equal(unscheduled[0].id, "b");
+    assert.match(unscheduled[0].reason, /dates end on 2026-10-19/);
+  });
+
+  test("a chapter that starts after the plan ends is reported", () => {
+    const dated = { chapters: [{ ...syllabus.chapters[1], startDate: "2026-12-01" }] };
+    const { placed, unscheduled } = twoWeeks({ syllabus: dated });
+    assert.equal(placed.length, 0);
+    assert.match(unscheduled[0].reason, /starts on 2026-12-01/);
+  });
+
+  test("free and needed periods are counted for the preview", () => {
+    const { freeSlots, neededPeriods } = twoWeeks();
+    assert.equal(freeSlots, 6);
+    assert.equal(neededPeriods, 4);
+  });
+});

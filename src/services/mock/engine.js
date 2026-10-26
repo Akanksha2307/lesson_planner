@@ -9,7 +9,15 @@ export const sortItems = (a, b) =>
 
 // Flatten syllabus into ordered topics with chapter info
 export function flatTopics(syllabus) {
-  return syllabus.chapters.flatMap((ch) => ch.topics.map((tp) => ({ ...tp, chapterTitle: ch.title })));
+  return syllabus.chapters.flatMap((ch) =>
+    ch.topics.map((tp) => ({
+      ...tp,
+      chapterId: tp.chapterId || ch.id,
+      chapterTitle: ch.title,
+      chapterStart: ch.startDate || undefined,
+      chapterEnd: ch.endDate || undefined,
+    })),
+  );
 }
 
 // How many periods of each topic are already taught for this section + subject
@@ -25,9 +33,14 @@ export function taughtPeriods(items) {
 /**
  * Auto-fill: place remaining topics into the teacher's timetable periods.
  * Skips Sundays, holidays and exam days. Periods already planned are left alone.
+ * A chapter with From / To dates is only placed inside them; chapters without dates fill the free
+ * periods in order. `topics` (admin's choice for one plan) replaces the syllabus order;
+ * `periodOverrides` changes periods per topic for this plan only. Same rules as lesson-plan-service.
  */
 export function generatePlanItems({
   syllabus,
+  topics,
+  periodOverrides = {},
   slots,
   startDate,
   endDate,
@@ -38,8 +51,9 @@ export function generatePlanItems({
 }) {
   const taught = taughtPeriods(existingItems);
   const queue = [];
-  flatTopics(syllabus).forEach((tp) => {
-    const remaining = Math.max(0, Math.ceil(tp.estPeriods - (taught[tp.id] || 0)));
+  (topics ?? flatTopics(syllabus)).forEach((tp) => {
+    const periods = periodOverrides[tp.id] ?? tp.estPeriods;
+    const remaining = Math.max(0, Math.ceil(periods - (taught[tp.id] || 0)));
     for (let i = 0; i < remaining; i++) queue.push(tp);
   });
   // remove periods already planned in future (other plans) so we continue after them
@@ -48,10 +62,13 @@ export function generatePlanItems({
     const idx = queue.findIndex((q) => q.id === it.topicId);
     if (idx > -1) queue.splice(idx, 1);
   });
+  const neededPeriods = queue.length;
 
   const skip = new Set([...holidays.map((h) => h.date), ...exams.map((e) => e.date)]);
   const placed = [];
   const skippedDays = [];
+  const missed = [];
+  let freeSlots = 0;
   for (let d = startDate; d <= endDate; d = addDays(d, 1)) {
     const wd = weekdayIndex(d);
     if (wd === 6) continue;
@@ -65,13 +82,24 @@ export function generatePlanItems({
     }
     for (const s of daySlots) {
       if (alreadyPlannedKeys?.has(`${d}|${s.periodId}`)) continue;
-      const tp = queue.shift();
-      if (!tp) break;
+      freeSlots++;
+      for (let i = queue.length - 1; i >= 0; i--) {
+        if (queue[i].chapterEnd && d > queue[i].chapterEnd) missed.push(...queue.splice(i, 1));
+      }
+      const idx = queue.findIndex((q) => !q.chapterStart || d >= q.chapterStart);
+      if (idx === -1) continue;
+      const [tp] = queue.splice(idx, 1);
       placed.push({ date: d, periodId: s.periodId, topic: tp });
     }
   }
-  const unscheduled = [...new Map(queue.map((q) => [q.id, q])).values()];
-  return { placed, unscheduled, skippedDays };
+  const reasonFor = (q) =>
+    q.chapterStart && q.chapterStart > endDate
+      ? `The chapter starts on ${q.chapterStart}, after this plan ends.`
+      : missed.includes(q) || (q.chapterEnd && q.chapterEnd < endDate)
+        ? `The chapter's dates end on ${q.chapterEnd}; there were not enough free periods before that.`
+        : 'Not enough free periods before the end date.';
+  const unscheduled = [...new Map([...missed, ...queue].map((q) => [q.id, { ...q, reason: reasonFor(q) }])).values()];
+  return { placed, unscheduled, skippedDays, freeSlots, neededPeriods };
 }
 
 /** Chapter-wise coverage for one section + subject */

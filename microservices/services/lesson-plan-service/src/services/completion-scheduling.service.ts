@@ -29,7 +29,7 @@ function blocked(school: any, date: any) {
 function slotsFor(school: any, item: any, date: any) {
   return (school.timetable || []).filter((s: any) =>
     s.sectionId === item.sectionId && s.subjectId === item.subjectId &&
-    s.teacherId === item.teacherId && s.weekday === ((weekdayIndex(date) + 1) % 7)
+    s.teacherId === item.teacherId && s.weekday === weekdayIndex(date)
   ).sort((a: any, b: any) => school.periodIds.indexOf(a.periodId) - school.periodIds.indexOf(b.periodId));
 }
 function started(school: any, date: any, periodId: any) {
@@ -191,4 +191,3 @@ export async function removeContinuation(ctx: RequestContext, item: any, session
   await item.save({ session });
   return moved;
 }
-

@@ -47,6 +47,8 @@ export const planSummary = (plan) => {
     classLabel: sectionLabel(plan.sectionId),
     subjectName: byId(subjects, plan.subjectId)?.name,
     teacherName: byId(staff, plan.teacherId)?.name,
+    createdByName: plan.createdBy ? byId(staff, plan.createdBy)?.name : undefined,
+    assignedByAdmin: Boolean(plan.createdBy) && plan.createdBy !== plan.teacherId,
     total: items.filter((i) => i.status !== LESSON_STATUS.RESCHEDULED).length,
     completed: count(LESSON_STATUS.COMPLETED),
     missingDetails: items.filter(

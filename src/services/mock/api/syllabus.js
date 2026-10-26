@@ -91,7 +91,22 @@ export const saveSyllabus = (syl) => {
   return ok(clean, 'Syllabus saved');
 };
 
-// rows: [{ Chapter, Topic, Periods, Subtopics }]
+// An Excel date cell → "YYYY-MM-DD" (same rules as lesson-plan-service)
+const excelDate = (v) => {
+  if (v === undefined || v === null || v === '') return undefined;
+  const pad = (n) => String(n).padStart(2, '0');
+  if (typeof v === 'number' && v > 20000 && v < 80000) {
+    const d = new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  }
+  const t = String(v).trim();
+  let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  m = t.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/);
+  return m ? `${m[3]}-${pad(+m[2])}-${pad(+m[1])}` : undefined;
+};
+
+// rows: [{ Chapter, Topic, Periods, Subtopics, Term?, From?, To? }]
 export const importSyllabus = ({ classId, subjectId, board, rows }) => {
   const chapters = [];
   rows.forEach((r) => {
@@ -103,6 +118,8 @@ export const importSyllabus = ({ classId, subjectId, board, rows }) => {
       ch = { title: chName, term: r.Term || 'Term 1', topics: [] };
       chapters.push(ch);
     }
+    ch.startDate = excelDate(r.From ?? r.from) ?? ch.startDate;
+    ch.endDate = excelDate(r.To ?? r.to) ?? ch.endDate;
     ch.topics.push({
       title: tpName,
       estPeriods: Number(r.Periods || r.periods) || 1,
@@ -113,5 +130,7 @@ export const importSyllabus = ({ classId, subjectId, board, rows }) => {
     });
   });
   if (!chapters.length) return fail('No rows found. The sheet needs columns: Chapter, Topic, Periods, Subtopics.');
+  const backwards = chapters.find((c) => c.startDate && c.endDate && c.endDate < c.startDate);
+  if (backwards) return fail(`"${backwards.title}": the To date is before the From date.`);
   return saveSyllabus({ classId, subjectId, board, chapters });
 };

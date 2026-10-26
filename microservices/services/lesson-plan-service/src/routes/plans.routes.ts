@@ -20,5 +20,6 @@ registerRoute(router, "deletePlan", plansController.remove);
 registerRoute(router, "extendPlan", plansController.extend);
 registerRoute(router, "updatePlanItem", plansController.updateItem);
 registerRoute(router, "submitPlan", plansController.submit);
+registerRoute(router, "previewPlan", plansController.preview);
 
 export default router;

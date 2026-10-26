@@ -9,6 +9,7 @@ import {
   Printer,
   Send,
   Trash2,
+  UserCheck,
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Modal from '@/components/common/Modal';
@@ -50,7 +51,9 @@ export default function PlanDetailPage() {
   if (error) return <ErrorState message={error} onRetry={reload} />;
   const { plan, items, otherSlots, holidays, exams } = data;
   const isOwner = plan.teacherId === user.id;
-  const editable = isOwner && ['draft', 'returned', 'approved'].includes(plan.status);
+  // The admin may rearrange / edit a plan while it is a draft or sent back – the teacher submits it
+  const adminCanArrange = role === 'admin' && ['draft', 'returned'].includes(plan.status);
+  const editable = (isOwner && ['draft', 'returned', 'approved'].includes(plan.status)) || adminCanArrange;
   const canSubmit = isOwner && ['draft', 'returned'].includes(plan.status);
   // HOD reviews plans; the principal can also review as a backup when the HOD is busy
   const canReview = ['hod', 'principal'].includes(role) && plan.status === 'submitted';
@@ -93,7 +96,7 @@ export default function PlanDetailPage() {
         loadNotifications();
       }
     });
-  const canExtend = isOwner && plan.status !== 'submitted';
+  const canExtend = (isOwner || role === 'admin') && plan.status !== 'submitted';
   const openExtend = () => setExtendTo(addDays(plan.endDate, 7));
   const extend = () =>
     run(() => lessonPlannerApi.extendPlan(plan.id, { endDate: extendTo })).then((r) => {
@@ -102,7 +105,7 @@ export default function PlanDetailPage() {
       if (r.planStatusChanged) toast('New lessons need HOD approval – submit the plan again.', 'info');
       reload();
     });
-  const select = (it) => (isOwner && it.status === 'planned' ? lm.openEdit(it) : lm.openDetail(it));
+  const select = (it) => (editable && it.status === 'planned' ? lm.openEdit(it) : lm.openDetail(it));
 
   return (
     <>
@@ -118,6 +121,15 @@ export default function PlanDetailPage() {
             <span className="muted small">
               {fmt(plan.startDate)} – {fmt(plan.endDate, { day: 'numeric', month: 'short', year: 'numeric' })} ·{' '}
               {plan.teacherName} · {plan.total} lessons
+              {plan.assignedByAdmin && (
+                <>
+                  {' '}
+                  ·{' '}
+                  <span className="assigned-chip">
+                    <UserCheck size={12} /> Assigned by {plan.createdByName || 'Admin'}
+                  </span>
+                </>
+              )}
             </span>
             <div style={{ width: 280 }}>
               <ProgressBar value={plan.total ? (plan.completed / plan.total) * 100 : 0} />
@@ -132,7 +144,7 @@ export default function PlanDetailPage() {
                 <CalendarPlus size={16} /> Extend plan
               </button>
             )}
-            {isOwner && plan.status === 'draft' && (
+            {(isOwner || role === 'admin') && plan.status === 'draft' && (
               <button className="btn danger" onClick={remove} disabled={busy}>
                 <Trash2 size={16} /> Delete
               </button>
@@ -142,8 +154,18 @@ export default function PlanDetailPage() {
                 <Send size={16} /> {masters.settings.approvalRequired ? 'Submit to HOD' : 'Finalise plan'}
               </button>
             )}
+            {adminCanArrange && (
+              <button className="btn" disabled title={`Only ${plan.teacherName} can submit this plan`}>
+                <Send size={16} /> Submit (teacher only)
+              </button>
+            )}
           </div>
         </div>
+        {plan.note && (
+          <div className="admin-note" style={{ marginTop: 14 }}>
+            <span className="strong">Note from {plan.createdByName || 'the admin'}:</span> {plan.note}
+          </div>
+        )}
         {canSubmit && needDetails.length > 0 && (
           <div className="row small" style={{ marginTop: 14, color: 'var(--st-partial)', gap: 6 }}>
             <AlertCircle size={16} /> {needDetails.length} lesson{needDetails.length > 1 ? 's need' : ' needs'}{' '}
@@ -181,7 +203,13 @@ export default function PlanDetailPage() {
                 </button>
               </>
             )}
-            {editable && (
+            {adminCanArrange && (
+              <span className="faint">
+                Drag a lesson onto a free period to move it, or onto another lesson to swap. Locked once the teacher
+                submits.
+              </span>
+            )}
+            {editable && !adminCanArrange && (
               <span className="faint">
                 Click a lesson to edit it. Drag any lesson – places it can go light up (green = free period, orange =
                 this class’s period).
@@ -200,7 +228,7 @@ export default function PlanDetailPage() {
           onSelect={select}
           onSwap={swap}
           onMove={move}
-          onContinue={continueLesson}
+          onContinue={isOwner ? continueLesson : undefined}
           dropKind={dropKind}
           draggable={editable}
         />

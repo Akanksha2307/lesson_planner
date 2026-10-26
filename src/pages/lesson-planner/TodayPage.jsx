@@ -12,11 +12,17 @@ import { useApi } from '@/hooks/useApi';
 import { lessonPlannerApi } from '@/services/lessonPlannerApi';
 import { STATUS_META } from '@/utils/constants';
 import { fmt, fmtLong, fmtTime, greeting, nowHHMM } from '@/utils/date';
+import { AssignedPlansBanner } from './PlansPage';
 
 export default function TodayPage() {
   const { user, loadNotifications, masters } = useApp();
   const navigate = useNavigate();
   const { data, loading, error, reload } = useApi(() => lessonPlannerApi.getToday({ userId: user.id }), [user.id]);
+  // Plans the admin assigned that still wait for this teacher's details + submit
+  const { data: myPlans } = useApi(
+    () => lessonPlannerApi.getPlans({ userId: user.id, role: 'teacher', status: '' }),
+    [user.id],
+  );
   const lm = useLessonModals(() => {
     reload();
     loadNotifications();
@@ -34,6 +40,7 @@ export default function TodayPage() {
 
   return (
     <>
+      <AssignedPlansBanner plans={myPlans} onOpen={(id) => navigate(`/lesson-planner/plans/${id}`)} />
       <div className="row-between">
         <div className="stack" style={{ gap: 2 }}>
           <h2 style={{ color: 'var(--text)' }}>
@@ -50,7 +57,7 @@ export default function TodayPage() {
           </button>
         </div>
       </div>
-            <DaySummary
+      <DaySummary
         date={data.date}
         items={lessons}
         holidays={masters.holidays}

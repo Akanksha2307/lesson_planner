@@ -31,6 +31,21 @@ function ensureEditable(plan: any, school: any) {
   }
 }
 
+// The teacher arranges their own lessons. An admin may also move / swap lessons, but only
+// while the plan is a draft or was sent back (never while it waits for or after approval).
+async function arrangeableItem(ctx: RequestContext, user: AuthUser, id: string, session: any) {
+  if (user.role !== "admin") return ownedItem(ctx, user, id, session);
+
+  const item = await PlanItem.findOne({ _id: id, schoolId: ctx.schoolId }).session(session);
+  if (!item) throw notFound("Lesson not found.");
+  const plan = await Plan.findOne({ _id: item.planId, schoolId: ctx.schoolId }).session(session);
+  if (!plan) throw notFound("Plan not found.");
+  if (![PLAN_STATUS.DRAFT, PLAN_STATUS.RETURNED].includes(plan.status as string)) {
+    throw conflict("The admin can only rearrange a plan while it is a draft or sent back.");
+  }
+  return { item, plan };
+}
+
 async function ownedItem(ctx: RequestContext, user: AuthUser, id: string, session: any) {
   const item = await PlanItem.findOne({
     _id: id,
@@ -82,7 +97,7 @@ function validateSlot(school: any, item: any, date: string, periodId: string) {
     t.teacherId === item.teacherId &&
     t.sectionId === item.sectionId &&
     t.subjectId === item.subjectId &&
-    t.weekday === ((weekdayIndex(date) + 1) % 7) &&
+    t.weekday === weekdayIndex(date) &&
     t.periodId === periodId
   );
 
@@ -252,7 +267,7 @@ export async function moveLesson(
   const school = await loadSchool(ctx.schoolId);
 
   return transaction(async (session: any) => {
-    const { item, plan } = await ownedItem(ctx, user, id, session);
+    const { item, plan } = await arrangeableItem(ctx, user, id, session);
 
     ensureEditable(plan, school);
 
@@ -314,8 +329,8 @@ export async function swapLessons(
   const school = await loadSchool(ctx.schoolId);
 
   return transaction(async (session: any) => {
-    const first = await ownedItem(ctx, user, body.firstItemId, session);
-    const second = await ownedItem(ctx, user, body.secondItemId, session);
+    const first = await arrangeableItem(ctx, user, body.firstItemId, session);
+    const second = await arrangeableItem(ctx, user, body.secondItemId, session);
 
     ensureEditable(first.plan, school);
     ensureEditable(second.plan, school);
@@ -415,7 +430,7 @@ export async function addPeriods(
         t.teacherId === item.teacherId &&
         t.sectionId === item.sectionId &&
         t.subjectId === item.subjectId &&
-        t.weekday === ((weekdayIndex(date) + 1) % 7)
+        t.weekday === weekdayIndex(date)
       );
 
       for (const slot of slots) {

@@ -25,6 +25,12 @@ export const generateBody = z
     startDate: isoDate('Start date'),
     endDate: isoDate('End date'),
     templateId: z.string().optional(),
+    // Admin only: which topics to teach in this plan, in this order (empty = the next topics of the syllabus)
+    topicIds: z.array(z.string().trim().min(1).max(100)).max(300).optional(),
+    // Admin only: periods per topic for this plan only, { topicId: periods }
+    topicPeriods: z.record(z.string(), z.coerce.number().int().min(1).max(50)).optional(),
+    // Admin only: a note to the teacher
+    note: z.string().trim().max(1000).optional(),
   })
   .refine((b) => b.endDate >= b.startDate, { message: 'End date must be on or after the start date', path: ['endDate'] });
 

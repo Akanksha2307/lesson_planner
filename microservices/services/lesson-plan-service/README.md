@@ -45,6 +45,18 @@ npm run test:unit   tests that need no database (auth, roles, validation, CORS, 
 npm run seed        load the demo school into the database (deletes school "one" first)
 ```
 
+## Who decides what is taught, and when
+* **Syllabus order** – the order of chapters and topics in the syllabus (admin / HOD reorder them on the Syllabus page,
+  or by the row order of the Excel sheet).
+* **Chapter dates** – a chapter may have `startDate` / `endDate` (Excel columns `From` / `To`, or the page). Its topics are
+  only planned inside those dates. Chapters without dates fill the free periods in order.
+* **Admin plans** – `POST /plans/generate` with `teacherId` (an active teacher) creates a draft plan FOR that teacher.
+  Optional `topicIds` (which topics, in this order), `topicPeriods` (`{ topicId: periods }` for this plan only) and
+  `note`. The teacher is notified, fills the lesson details and submits – only the teacher of a plan can submit it.
+* **Preview** – `POST /plans/preview` takes the same body and answers where every lesson would land
+  (`lessons`, `unscheduled` with a reason, `skippedDays`, `freeSlots`, `neededPeriods`) without saving anything.
+* The admin may move / swap lessons of a plan while it is a draft or sent back; never after the teacher submits.
+
 ## Holidays and sudden holidays
 `POST /holidays` (admin, principal) saves the holiday. For a sudden holiday (`unexpected: true`, today or later)
 the lessons of that day are moved by a direct function call (`holiday-shift.service`), the moved/affected counts are

@@ -35,6 +35,11 @@ const planSchema = new Schema(
     status: { type: String, enum: Object.values(PLAN_STATUS), default: PLAN_STATUS.DRAFT },
     reviews: { type: [reviewSchema], default: [] },
     submittedAt: Date,
+    // Who made the plan: the teacher, or an admin who assigned it to the teacher
+    createdBy: String,
+    createdByRole: String,
+    // The admin's note to the teacher, shown at the top of the plan
+    note: { type: String, maxlength: 1000 },
   },
   { timestamps: true },
 );

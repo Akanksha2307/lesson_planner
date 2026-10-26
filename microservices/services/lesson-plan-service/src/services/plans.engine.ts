@@ -8,7 +8,14 @@ export const byDateAndPeriod = (periodIds: any) => (a: any, b: any) =>
 // Syllabus → one ordered list of topics, each with its chapter
 export const flatTopics = (syllabus: any) =>
   syllabus.chapters.flatMap((ch: any) =>
-    ch.topics.map((tp: any) => ({ ...tp, id: tp.id ?? tp._id, chapterId: ch.id ?? ch._id, chapterTitle: ch.title })),
+    ch.topics.map((tp: any) => ({
+      ...tp,
+      id: tp.id ?? tp._id,
+      chapterId: ch.id ?? ch._id,
+      chapterTitle: ch.title,
+      chapterStart: ch.startDate || undefined,
+      chapterEnd: ch.endDate || undefined,
+    })),
   );
 
 // How many periods of each topic are already taught (partly done counts as half)
@@ -27,15 +34,39 @@ export function taughtPeriods(items: any) {
  * - Topics already planned in another plan are not planned again.
  * - Sundays are skipped. Holidays and exam days are skipped and reported.
  * - Periods that already have a lesson are left alone.
+ * - A chapter with From / To dates is only placed inside those dates. Chapters without dates
+ *   fill the free periods in syllabus order.
+ * - `topics` (optional) replaces the syllabus order: only these topics, in this order
+ *   (the admin's choice for one plan). `periodOverrides` changes estPeriods for this plan only.
  */
-export function generatePlanItems({ syllabus, slots, startDate, endDate, blockedDates, existingItems, plannedKeys, periodIds }: {
-  syllabus: any; slots: any[]; startDate: string; endDate: string; blockedDates: Set<string>;
-  existingItems: any[]; plannedKeys: Set<string>; periodIds: string[];
+export function generatePlanItems({
+  syllabus,
+  topics,
+  periodOverrides = {},
+  slots,
+  startDate,
+  endDate,
+  blockedDates,
+  existingItems,
+  plannedKeys,
+  periodIds,
+}: {
+  syllabus: any;
+  topics?: any[];
+  periodOverrides?: Record<string, number>;
+  slots: any[];
+  startDate: string;
+  endDate: string;
+  blockedDates: Set<string>;
+  existingItems: any[];
+  plannedKeys: Set<string>;
+  periodIds: string[];
 }) {
   const taught = taughtPeriods(existingItems);
   const queue: any[] = [];
-  flatTopics(syllabus).forEach((tp: any) => {
-    const remaining = Math.max(0, Math.ceil(tp.estPeriods - (taught[tp.id] || 0)));
+  (topics ?? flatTopics(syllabus)).forEach((tp: any) => {
+    const periods = periodOverrides[tp.id] ?? tp.estPeriods;
+    const remaining = Math.max(0, Math.ceil(periods - (taught[tp.id] || 0)));
     for (let i = 0; i < remaining; i++) queue.push(tp);
   });
   // Already planned (not yet taught) in another plan → continue after them
@@ -45,9 +76,12 @@ export function generatePlanItems({ syllabus, slots, startDate, endDate, blocked
       const idx = queue.findIndex((q) => q.id === it.topicId);
       if (idx > -1) queue.splice(idx, 1);
     });
+  const neededPeriods = queue.length;
 
   const placed = [];
   const skippedDays = [];
+  const missed: any[] = []; // their chapter's To date passed before a free period came
+  let freeSlots = 0;
   for (let d = startDate; d <= endDate; d = addDays(d, 1)) {
     const wd = weekdayIndex(d);
     if (wd === 6) continue; // Sunday
@@ -61,16 +95,35 @@ export function generatePlanItems({ syllabus, slots, startDate, endDate, blocked
     }
     for (const s of daySlots) {
       if (plannedKeys.has(`${d}|${s.periodId}`)) continue;
-      const tp = queue.shift();
-      if (!tp) break;
+      freeSlots++;
+      // Topics whose chapter window has closed cannot be placed any more
+      for (let i = queue.length - 1; i >= 0; i--) {
+        if (queue[i].chapterEnd && d > queue[i].chapterEnd) missed.push(...queue.splice(i, 1));
+      }
+      // The first topic (in order) whose chapter window is open on this day
+      const idx = queue.findIndex((q) => !q.chapterStart || d >= q.chapterStart);
+      if (idx === -1) continue;
+      const [tp] = queue.splice(idx, 1);
       placed.push({ date: d, periodId: s.periodId, topic: tp });
     }
   }
-  // Topics that did not fit in these dates (each listed once)
+
+  // Topics that did not fit in these dates (each listed once), with the reason
+  const reasonFor = (q: any) =>
+    q.chapterStart && q.chapterStart > endDate
+      ? `The chapter starts on ${q.chapterStart}, after this plan ends.`
+      : missed.includes(q) || (q.chapterEnd && q.chapterEnd < endDate)
+        ? `The chapter's dates end on ${q.chapterEnd}; there were not enough free periods before that.`
+        : 'Not enough free periods before the end date.';
   const unscheduled = [
-    ...new Map(queue.map((q) => [q.id, { id: q.id, title: q.title, chapterTitle: q.chapterTitle }])).values(),
+    ...new Map(
+      [...missed, ...queue].map((q) => [
+        q.id,
+        { id: q.id, title: q.title, chapterTitle: q.chapterTitle, reason: reasonFor(q) },
+      ]),
+    ).values(),
   ];
-  return { placed, unscheduled, skippedDays };
+  return { placed, unscheduled, skippedDays, freeSlots, neededPeriods };
 }
 
 // Sample lesson details – used for the demo data (an AI call can replace this later)

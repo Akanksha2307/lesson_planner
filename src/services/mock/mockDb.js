@@ -2,7 +2,7 @@
 import { addDays, startOfWeek, todayISO } from '@/utils/date';
 import { LESSON_STATUS, PLAN_STATUS, UNDERSTANDING } from '@/utils/constants';
 import { buildCalendar, buildSyllabus, defaultSettings, templates, timetable } from './seed';
-import { generatePlanItems, sortItems, suggestLesson } from './engine';
+import { flatTopics, generatePlanItems, sortItems, suggestLesson } from './engine';
 
 const KEY = 'qshikshak-lesson-planner-demo-v1';
 let state = null;
@@ -40,17 +40,24 @@ export function reset() {
 }
 
 // ---------- plan creation (shared by seed + API) ----------
-export function createPlan(
+// Where the lessons of a new plan would go (nothing saved) – used by create and by preview
+export function planPlacement(
   s,
-  { teacherId, classId, sectionId, subjectId, startDate, endDate, templateId },
-  status = PLAN_STATUS.DRAFT,
+  { teacherId, classId, sectionId, subjectId, startDate, endDate, topicIds, topicPeriods },
 ) {
   const syllabus = s.syllabus.find((x) => x.classId === classId && x.subjectId === subjectId);
   if (!syllabus) throw new Error('No syllabus found for this class and subject. Ask the admin to add it first.');
   const slots = timetable.filter(
     (t) => t.sectionId === sectionId && t.subjectId === subjectId && t.teacherId === teacherId,
   );
-  if (!slots.length) throw new Error('You have no timetable periods for this class and subject.');
+  if (!slots.length) throw new Error('There are no timetable periods for this teacher, class and subject.');
+
+  let topics;
+  if (topicIds?.length) {
+    const all = new Map(flatTopics(syllabus).map((t) => [t.id, t]));
+    if (topicIds.some((id) => !all.has(id))) throw new Error('A chosen topic is not in this syllabus.');
+    topics = [...new Set(topicIds)].map((id) => all.get(id));
+  }
 
   const existing = s.items.filter((i) => i.sectionId === sectionId && i.subjectId === subjectId);
   const plannedKeys = new Set(
@@ -58,8 +65,10 @@ export function createPlan(
       .filter((i) => i.status !== LESSON_STATUS.CANCELLED && i.status !== LESSON_STATUS.RESCHEDULED)
       .map((i) => `${i.date}|${i.periodId}`),
   );
-  const { placed, unscheduled, skippedDays } = generatePlanItems({
+  return generatePlanItems({
     syllabus,
+    topics,
+    periodOverrides: topicPeriods || {},
     slots,
     startDate,
     endDate,
@@ -68,6 +77,11 @@ export function createPlan(
     existingItems: existing,
     alreadyPlannedKeys: plannedKeys,
   });
+}
+
+export function createPlan(s, input, status = PLAN_STATUS.DRAFT) {
+  const { teacherId, classId, sectionId, subjectId, startDate, endDate, templateId } = input;
+  const { placed, unscheduled, skippedDays } = planPlacement(s, input);
   if (!placed.length)
     throw new Error('Nothing to plan: all periods in these dates are already planned or are holidays.');
 
@@ -84,6 +98,9 @@ export function createPlan(
     reviews: [],
     createdAt: new Date().toISOString(),
     submittedAt: null,
+    createdBy: input.createdBy || teacherId,
+    createdByRole: input.createdByRole || 'teacher',
+    note: input.note || undefined,
   };
   s.plans.push(plan);
   placed.forEach(({ date, periodId, topic }) => {
