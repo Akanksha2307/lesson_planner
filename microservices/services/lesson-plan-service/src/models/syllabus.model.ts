@@ -19,6 +19,9 @@ const chapterSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   term: { type: String, default: 'Term 1' },
   order: Number,
+  // Optional teaching window set by the admin (YYYY-MM-DD). Empty = placed automatically.
+  startDate: String,
+  endDate: String,
   topics: { type: [topicSchema], default: [] },
 });
 

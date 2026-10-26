@@ -18,6 +18,9 @@ class PlansController {
     const result = await service.generatePlan(req.ctx!, req.user!, validatedBody<GenerateBody>(req));
     ok(res, result, "Plan created", 201);
   }
+  async preview(req: Request, res: Response): Promise<void> {
+    ok(res, await service.previewPlan(req.ctx!, req.user!, validatedBody<GenerateBody>(req)));
+  }
 
   async remove(req: Request, res: Response): Promise<void> {
     await service.deletePlan(req.ctx!, req.user!, validatedParams<IdParams>(req).id);

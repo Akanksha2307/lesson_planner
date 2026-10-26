@@ -168,6 +168,10 @@ async function summaries(plans: any, sch: any) {
 
       teacherName: sch.staff(plan.teacherId)?.name,
 
+      createdByName: plan.createdBy ? sch.staff(plan.createdBy)?.name : undefined,
+
+      assignedByAdmin: !!plan.createdBy && plan.createdBy !== plan.teacherId,
+
       total: mine.filter(
         (item) =>
           item.status !== LESSON_STATUS.RESCHEDULED
@@ -566,85 +570,65 @@ export async function getPlan(ctx: RequestContext, user: AuthUser, id: any) {
 // Create plan
 // -----------------------------------------
 
+// The admin's choice of topics (and their order) for one plan → the engine's topic list.
+// Unknown topic ids are refused, so a plan never points at a topic that is not in the syllabus.
+function chosenTopics(syllabus: any, topicIds?: string[]) {
+  if (!topicIds?.length) return undefined;
+  const all = flatTopics(syllabus);
+  const byId = new Map(all.map((t: any) => [t.id, t]));
+  const unknown = topicIds.filter((id) => !byId.has(id));
+  if (unknown.length) {
+    throw badRequest(`${unknown.length === 1 ? "A chosen topic is" : "Some chosen topics are"} not in this syllabus. Reload the page and try again.`);
+  }
+  return [...new Set(topicIds)].map((id) => byId.get(id));
+}
+
+// Runs the engine for a new plan WITHOUT saving: used by create and by preview.
+async function buildPlan(schoolId: string, input: any) {
+  const { teacherId, classId, sectionId, startDate, endDate, templateId } = input;
+
+  const sch = await loadSchool(schoolId);
+  const settings = sch.settings;
+  const section = sch.section(sectionId);
+
+  if (!section || section.classId !== classId) {
+    throw badRequest("That section is not part of this class.");
+  }
+  if (!sch.staff(teacherId)) {
+    throw badRequest("Teacher not found.");
+  }
+  if (addDays(startDate, MAX_PLAN_DAYS) < endDate) {
+    throw badRequest(`A plan can cover at most ${MAX_PLAN_DAYS} days.`);
+  }
+  if (templateId && !sch.templates.some((template: any) => template.id === templateId)) {
+    throw badRequest("Template not found.");
+  }
+
+  const inp = await planningInputs(schoolId, input, settings, sch);
+  const topics = chosenTopics(inp.syllabus, input.topicIds);
+
+  const result = generatePlanItems({
+    ...inp,
+    topics,
+    periodOverrides: input.topicPeriods || {},
+    existingItems: inp.existing,
+    startDate,
+    endDate,
+    periodIds: sch.periodIds
+  });
+
+  return { sch, ...result };
+}
+
 export async function createPlan(
   schoolId: string,
   input: any,
-  status = PLAN_STATUS.DRAFT
+  status = PLAN_STATUS.DRAFT,
+  creator?: AuthUser
 ) {
-  const {
-    teacherId,
-    classId,
-    sectionId,
-    subjectId,
-    startDate,
-    endDate,
-    templateId
-  } = input;
+  const { teacherId, classId, sectionId, subjectId, startDate, endDate, templateId } = input;
 
-  const sch = await loadSchool(schoolId);
-
-  const settings = sch.settings;
-
-  const section = sch.section(sectionId);
-
-  if (
-    !section ||
-    section.classId !== classId
-  ) {
-    throw badRequest(
-      "That section is not part of this class."
-    );
-  }
-
-  if (!sch.staff(teacherId)) {
-    throw badRequest(
-      "Teacher not found."
-    );
-  }
-
-  if (
-    addDays(startDate, MAX_PLAN_DAYS) <
-    endDate
-  ) {
-    throw badRequest(
-      `A plan can cover at most ${MAX_PLAN_DAYS} days.`
-    );
-  }
-
-  if (
-    templateId &&
-    !sch.templates.some(
-      (template: any) =>
-        template.id === templateId
-    )
-  ) {
-    throw badRequest(
-      "Template not found."
-    );
-  }
-
-  const inp = await planningInputs(
-    schoolId,
-    input,
-    settings,
-    sch
-  );
-
-  const {
-    placed,
-    unscheduled,
-    skippedDays
-  } = generatePlanItems({
-    ...inp,
-
-    existingItems: inp.existing,
-
-    startDate,
-
-    endDate,
-
-    periodIds: sch.periodIds
-  });
+  const { sch, placed, unscheduled, skippedDays } = await buildPlan(schoolId, input);
 
   if (!placed.length) {
     throw badRequest(
@@ -652,52 +636,93 @@ export async function createPlan(
     );
   }
 
-  const defaultTemplate = sch.templates.find(
-    (template: any) => template.isDefault
-  );
+  const defaultTemplate = sch.templates.find((template: any) => template.isDefault);
 
   const plan = await Plan.create({
     schoolId,
-
     teacherId,
-
     classId,
-
     sectionId,
-
     subjectId,
-
     startDate,
-
     endDate,
-
-    templateId:
-      templateId ||
-      defaultTemplate?.id,
-
-    status
+    templateId: templateId || defaultTemplate?.id,
+    status,
+    createdBy: creator?.id || teacherId,
+    createdByRole: creator?.role || "teacher",
+    note: input.note || undefined
   });
 
-  const placedCount = await insertLessons(
-    schoolId,
-    plan,
-    placed,
-    "created"
-  );
+  const placedCount = await insertLessons(schoolId, plan, placed, "created");
 
-  const [summary] = await summaries(
-    [plan],
-    sch
-  );
+  const [summary] = await summaries([plan], sch);
 
   return {
     plan: summary,
-
     unscheduled,
-
     skippedDays,
-
     placedCount
+  };
+}
+
+// Teachers always plan for themselves. An admin / HOD plans FOR a teacher: teacherId is
+// required and must be an active teacher of this school.
+async function plannedTeacher(ctx: RequestContext, user: AuthUser, body: any) {
+  if (user.role === "teacher") {
+    if (body.topicIds?.length || body.topicPeriods || body.note) {
+      throw forbidden("Only the admin can choose topics or add a note when creating a plan.");
+    }
+    return user.id;
+  }
+  if (!body.teacherId) {
+    throw badRequest("Choose the teacher this plan is for.");
+  }
+  const sch = await loadSchool(ctx.schoolId);
+  const teacher = sch.staff(body.teacherId);
+  if (!teacher || teacher.role !== "teacher" || teacher.active === false) {
+    throw badRequest("Choose an active teacher.");
+  }
+  return body.teacherId;
+}
+
+// -----------------------------------------
+// POST /plans/preview  – what the plan WOULD look like (nothing is saved)
+// -----------------------------------------
+
+export async function previewPlan(ctx: RequestContext, user: AuthUser, body: any) {
+  const teacherId = await plannedTeacher(ctx, user, body);
+  const { sch, placed, unscheduled, skippedDays, freeSlots, neededPeriods } = await buildPlan(ctx.schoolId, {
+    ...body,
+    teacherId
+  });
+
+  // "Leaf structure (1 of 2)" – which part of the topic each lesson is
+  const totals = new Map<string, number>();
+  placed.forEach((p: any) => totals.set(p.topic.id, (totals.get(p.topic.id) || 0) + 1));
+  const seen = new Map<string, number>();
+
+  return {
+    lessons: placed.map((p: any) => {
+      const part = (seen.get(p.topic.id) || 0) + 1;
+      seen.set(p.topic.id, part);
+      const period = sch.period(p.periodId);
+      return {
+        date: p.date,
+        periodId: p.periodId,
+        periodLabel: period?.label,
+        start: period?.start,
+        topicId: p.topic.id,
+        topicTitle: p.topic.title,
+        chapterId: p.topic.chapterId,
+        chapterTitle: p.topic.chapterTitle,
+        part,
+        of: totals.get(p.topic.id)
+      };
+    }),
+    unscheduled,
+    skippedDays,
+    freeSlots,
+    neededPeriods
   };
 }
 
@@ -710,23 +735,41 @@ export async function generatePlan(
   user: AuthUser,
   body: any
 ) {
-  let teacherId = body.teacherId;
+  const teacherId = await plannedTeacher(ctx, user, body);
 
-  if (user.role === "teacher") {
-    teacherId = user.id;
-  } else if (!teacherId) {
-    throw badRequest(
-      "Choose the teacher this plan is for."
-    );
-  }
-
-  return createPlan(
+  const result = await createPlan(
     ctx.schoolId,
     {
       ...body,
       teacherId
-    }
+    },
+    PLAN_STATUS.DRAFT,
+    user
   );
+
+  if (teacherId !== user.id) {
+    await notifyAssignedTeacher(ctx.schoolId, user, result.plan);
+  }
+  return result;
+}
+
+// The teacher's bell: "Admin assigned you a plan". Never breaks the create.
+async function notifyAssignedTeacher(schoolId: string, user: AuthUser, plan: any) {
+  try {
+    const by = user.name || "The admin";
+    const role = user.role === "admin" ? "Admin" : user.role === "hod" ? "HOD" : user.role;
+    const what = `${plan.classLabel || ""} ${plan.subjectName || ""}`.trim() || "lesson";
+    const note = plan.note ? ` Note: “${plan.note}”` : "";
+    await notify(
+      schoolId,
+      [plan.teacherId],
+      "New plan assigned to you",
+      `${by} (${role}) assigned you a ${what} plan · ${plan.total} lessons · ${plan.startDate} to ${plan.endDate}. Fill the lesson details and submit it.${note}`,
+      `/lesson-planner/plans/${plan.id}`
+    );
+  } catch (err: any) {
+    console.warn(`[lesson-plan-service] could not notify the teacher: ${err.message}`);
+  }
 }
 
 // -----------------------------------------
@@ -1022,8 +1065,8 @@ export async function updateItem(
 export async function submitPlan(ctx: RequestContext, user: AuthUser, id: any) {
   const plan = await findPlan(ctx, user, id);
 
-  if (!isOwnerOrAdmin(user, plan)) {
-    throw forbidden("Only the plan owner or admin can submit this plan.");
+  if (plan.teacherId !== user.id) {
+    throw forbidden("Only the teacher of this plan can submit it.");
   }
 
   if (![PLAN_STATUS.DRAFT, PLAN_STATUS.RETURNED].includes(plan.status)) {

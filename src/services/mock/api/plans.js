@@ -3,12 +3,14 @@ import { addDays, todayISO } from '@/utils/date';
 import { LESSON_STATUS, PLAN_STATUS } from '@/utils/constants';
 import { staff, subjects, timetable } from '../seed';
 import { generatePlanItems, sortItems } from '../engine';
-import { createPlan, db, emptyDetails, save, uid } from '../mockDb';
+import { createPlan, db, emptyDetails, planPlacement, save, uid } from '../mockDb';
+import { PERIODS } from '@/utils/constants';
 import { ok, fail, byId, sectionLabel, enrich, planSummary, canSeeAll, notify, syllabusFor, isLive } from './helpers';
 
-export const getPlans = ({ userId, role, status }) => {
+export const getPlans = ({ userId, role, status, teacherId }) => {
   let plans = db().plans;
   if (!canSeeAll(role)) plans = plans.filter((p) => p.teacherId === userId);
+  else if (teacherId) plans = plans.filter((p) => p.teacherId === teacherId);
   if (status) plans = plans.filter((p) => p.status === status);
   return ok(plans.map(planSummary).sort((a, b) => (a.startDate < b.startDate ? 1 : -1)));
 };
@@ -38,9 +40,65 @@ export const getPlan = (id) => {
   });
 };
 
-export const generatePlan = (body) => {
+// Teachers plan for themselves; an admin plans FOR a teacher (topics, note) – same rules as the server
+const forTeacher = (body, by) => {
+  if (!by || by.role === 'teacher') {
+    if (body.topicIds?.length || body.topicPeriods || body.note)
+      throw new Error('Only the admin can choose topics or add a note when creating a plan.');
+    return { ...body, teacherId: by?.id || body.teacherId };
+  }
+  const teacher = byId(staff, body.teacherId);
+  if (!body.teacherId) throw new Error('Choose the teacher this plan is for.');
+  if (!teacher || teacher.role !== 'teacher' || teacher.active === false) throw new Error('Choose an active teacher.');
+  return { ...body, createdBy: by.id, createdByRole: by.role };
+};
+
+export const previewPlan = (body, by) => {
   try {
-    const res = createPlan(db(), body);
+    const { placed, unscheduled, skippedDays, freeSlots, neededPeriods } = planPlacement(db(), forTeacher(body, by));
+    const totals = {};
+    placed.forEach((p) => (totals[p.topic.id] = (totals[p.topic.id] || 0) + 1));
+    const seen = {};
+    return ok({
+      lessons: placed.map((p) => {
+        seen[p.topic.id] = (seen[p.topic.id] || 0) + 1;
+        const period = PERIODS.find((x) => x.id === p.periodId);
+        return {
+          date: p.date,
+          periodId: p.periodId,
+          periodLabel: period?.label,
+          start: period?.start,
+          topicId: p.topic.id,
+          topicTitle: p.topic.title,
+          chapterId: p.topic.chapterId,
+          chapterTitle: p.topic.chapterTitle,
+          part: seen[p.topic.id],
+          of: totals[p.topic.id],
+        };
+      }),
+      unscheduled: unscheduled.map(({ id, title, chapterTitle, reason }) => ({ id, title, chapterTitle, reason })),
+      skippedDays,
+      freeSlots,
+      neededPeriods,
+    });
+  } catch (e) {
+    return fail(e.message);
+  }
+};
+
+export const generatePlan = (body, by) => {
+  try {
+    const input = forTeacher(body, by);
+    const res = createPlan(db(), input);
+    if (input.createdBy && input.createdBy !== input.teacherId) {
+      const sum = planSummary(res.plan);
+      notify(
+        input.teacherId,
+        'New plan assigned to you',
+        `${by.name || 'The admin'} (Admin) assigned you a ${sum.classLabel} ${sum.subjectName} plan · ${sum.total} lessons · ${sum.startDate} to ${sum.endDate}. Fill the lesson details and submit it.${input.note ? ` Note: “${input.note}”` : ''}`,
+        `/lesson-planner/plans/${res.plan.id}`,
+      );
+    }
     save();
     return ok(
       {
@@ -79,7 +137,7 @@ export const submitPlan = (id) => {
     );
   plan.status = s.settings.approvalRequired ? PLAN_STATUS.SUBMITTED : PLAN_STATUS.APPROVED;
   plan.submittedAt = new Date().toISOString();
-    if (s.settings.approvalRequired) {
+  if (s.settings.approvalRequired) {
     const t = byId(staff, plan.teacherId);
     const label = `${sectionLabel(plan.sectionId)} ${byId(subjects, plan.subjectId).name}`;
     notify('t3', 'New plan to review', `${t.name} submitted ${label}.`, '/lesson-planner/approvals');

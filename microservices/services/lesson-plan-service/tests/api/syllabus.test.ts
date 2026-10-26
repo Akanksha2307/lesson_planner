@@ -214,3 +214,51 @@ test("import: a teacher cannot import → 403", async () => {
   const res = await request(t.app).post(`${URL}/import`).set("Authorization", T1).send({ classId: "c8", subjectId: "math", rows: [{ Chapter: "A", Topic: "B" }] });
   assert.equal(res.status, 403);
 });
+// ---------- admin: order and chapter dates ----------
+
+test("import: From / To columns become the chapter's teaching dates", async () => {
+  const res = await request(t.app)
+    .post(`${URL}/import`)
+    .set("Authorization", A1)
+    .send({
+      classId: "c7",
+      subjectId: "sci",
+      rows: [
+        { Chapter: "Nutrition", Topic: "Plants", Periods: 2, From: "01/08/2026", To: "2026-08-15" },
+        { Chapter: "Nutrition", Topic: "Animals", Periods: 1 },
+        { Chapter: "Heat", Topic: "Temperature", Periods: 1 }
+      ]
+    });
+  assert.equal(res.status, 200, res.body.message);
+  const syl = await getSyl("c7", "sci");
+  assert.equal(syl.chapters[0].startDate, "2026-08-01");
+  assert.equal(syl.chapters[0].endDate, "2026-08-15");
+  assert.equal(syl.chapters[1].startDate, undefined, "no dates = automatic");
+});
+
+test("import: To before From → 400", async () => {
+  const res = await request(t.app)
+    .post(`${URL}/import`)
+    .set("Authorization", A1)
+    .send({ classId: "c7", subjectId: "sci", rows: [{ Chapter: "Heat", Topic: "Temperature", From: "2026-09-10", To: "2026-09-01" }] });
+  assert.equal(res.status, 400);
+});
+
+test("admin reorders chapters and sets dates on the page; ids stay the same", async () => {
+  const syl = await getSyl("c7", "sci");
+  const [nutrition, heat] = syl.chapters;
+  const res = await save(A1, {
+    classId: "c7",
+    subjectId: "sci",
+    version: syl.version,
+    chapters: [
+      { ...heat, startDate: "2026-07-01", endDate: "2026-07-10" },
+      { ...nutrition, startDate: "", endDate: "" }
+    ]
+  });
+  assert.equal(res.status, 200, res.body.message);
+  const after = await getSyl("c7", "sci");
+  assert.deepEqual(after.chapters.map((c: any) => c.id), [heat.id, nutrition.id], "new order, same ids");
+  assert.equal(after.chapters[0].startDate, "2026-07-01");
+  assert.equal(after.chapters[1].startDate, undefined, "cleared dates = automatic again");
+});

@@ -12,6 +12,23 @@ import {
 } from '../utils/AppError';
 
 const key = (s: any) => String(s || '').trim().toLowerCase();
+// A date cell from Excel → "YYYY-MM-DD", or undefined when empty / not a date.
+// Accepts 2026-08-01, 01-08-2026, 01/08/2026 (day first) and Excel's day numbers (46235).
+export function excelDate(value: any): string | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const iso = (d: Date) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return iso(value);
+  if (typeof value === 'number' && value > 20000 && value < 80000) {
+    return iso(new Date(Date.UTC(1899, 11, 30) + Math.round(value) * 86400000));
+  }
+  const s = String(value).trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/);
+  if (m) return `${m[3]}-${pad(+m[2])}-${pad(+m[1])}`;
+  return undefined;
+}
 
 // Adds order numbers and defaults. Existing topics keep their id, source and addedBy.
 function normalise(chapters: any, previous: any, user: AuthUser) {
@@ -32,6 +49,8 @@ function normalise(chapters: any, previous: any, user: AuthUser) {
       title: c.title,
       term: c.term || 'Term 1',
       order: ci + 1,
+      startDate: c.startDate || undefined,
+      endDate: c.endDate || undefined,
       topics: c.topics.map((t: any, ti: any) => {
         const old = t.id ? oldTopics.get(t.id) : null;
         const topicId = freshId(old ? t.id : null, 'tp');
@@ -129,8 +148,20 @@ export async function importSyllabus(ctx: RequestContext, user: AuthUser, { clas
     let ch = chapters.find((c) => key(c.title) === key(chName));
     if (!ch) {
       const old = oldChapters.get(key(chName));
-      ch = { id: old?._id, title: chName, term: String(r.Term ?? r.term ?? '').trim() || 'Term 1', topics: [], old };
+           ch = {
+        id: old?._id,
+        title: chName,
+        term: String(r.Term ?? r.term ?? '').trim() || 'Term 1',
+        // Optional From / To columns. Empty = keep what was set on the page.
+        startDate: excelDate(r.From ?? r.from) ?? old?.startDate,
+        endDate: excelDate(r.To ?? r.to) ?? old?.endDate,
+        topics: [],
+        old,
+      };
       chapters.push(ch);
+    } else {
+      ch.startDate = excelDate(r.From ?? r.from) ?? ch.startDate;
+      ch.endDate = excelDate(r.To ?? r.to) ?? ch.endDate;
     }
     const oldTopic = ch.old?.topics.find((t: any) => key(t.title) === key(tpName));
     ch.topics.push({
@@ -143,7 +174,9 @@ export async function importSyllabus(ctx: RequestContext, user: AuthUser, { clas
         .filter(Boolean),
     });
   });
-  if (!chapters.length) throw badRequest('No rows found. The sheet needs columns: Chapter, Topic, Periods, Subtopics.');
+    if (!chapters.length) throw badRequest('No rows found. The sheet needs columns: Chapter, Topic, Periods, Subtopics (optional: Term, From, To).');
+  const backwards = chapters.find((c) => c.startDate && c.endDate && c.endDate < c.startDate);
+  if (backwards) throw badRequest(`"${backwards.title}": the To date is before the From date.`);
 
   const syllabus = existing
     ? await writeChapters(existing, normalise(chapters, existing, user), user)

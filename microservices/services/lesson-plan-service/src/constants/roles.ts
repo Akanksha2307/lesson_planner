@@ -18,8 +18,10 @@ export const ROLE_GROUPS = {
   PLANNERS: [ROLES.TEACHER, ROLES.HOD, ROLES.ADMIN],
   // admin, hod, principal  – may edit the syllabus
   SYLLABUS_EDITORS: [ROLES.ADMIN, ROLES.HOD, ROLES.PRINCIPAL],
-  // teacher only – marking, moving, cancelling their own lessons
+  // teacher only – marking, cancelling their own lessons
   TEACHER_ONLY: [ROLES.TEACHER],
+  // teacher + admin – moving / swapping lessons (admin only while the plan is a draft or returned)
+  ARRANGERS: [ROLES.TEACHER, ROLES.ADMIN],
   // admin, principal  – school settings, templates, holidays and exams
   MANAGERS: [ROLES.ADMIN, ROLES.PRINCIPAL],
 } as const satisfies Record<string, readonly Role[]>;

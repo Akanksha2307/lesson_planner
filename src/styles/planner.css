@@ -289,10 +289,80 @@
 .topic-row .input {
   padding: 6px 10px;
 }
+/* Syllabus: ↑ ↓ to set the teaching order */
+.topic-row.ordered {
+  grid-template-columns: 64px 1fr 120px 90px auto;
+  padding-left: 14px;
+}
+.order-btns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.order-btns .icon-btn {
+  width: 28px;
+  height: 28px;
+}
+.order-btns .icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.unit-head:has(.chapter-schedule) {
+  flex-wrap: wrap;
+}
+/* Second line of a chapter: its From – To dates and whether it fits */
+.chapter-schedule {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-left: 106px;
+  cursor: default;
+}
 @media (max-width: 640px) {
-  .topic-row {
+  .chapter-schedule {
+    padding-left: 0;
+  }
+}
+.chapter-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.chapter-dates .input {
+  width: 140px;
+  padding: 5px 8px;
+}
+.fit-chip {
+  font-size: var(--fs-xs);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  font-weight: 500;
+}
+.fit-chip.ok {
+  background: #e7f6ec;
+  color: #166534;
+}
+.fit-chip.short {
+  background: #fff3dc;
+  color: #8a5a00;
+}
+.fit-chip.auto {
+  background: #f1f1f5;
+  color: var(--text-2);
+}
+@media (max-width: 640px) {
+  .topic-row,
+  .topic-row.ordered {
     grid-template-columns: 1fr 1fr;
     padding-left: 14px;
+  }
+  .unit-head {
+    flex-wrap: wrap;
   }
 }
 
@@ -365,4 +435,40 @@
   .plan-card > :last-child {
     grid-column: 1 / -1;
   }
+}
+
+/* Plans assigned by the admin */
+.assigned-banner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+.assigned-banner .btn {
+  background: #fff;
+  color: var(--primary);
+  border-color: #fff;
+  font-weight: 600;
+}
+.assigned-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--primary-50);
+  color: var(--primary);
+  font-weight: 500;
+}
+.admin-note {
+  background: var(--primary-50);
+  color: var(--primary-600);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: var(--fs-md);
 }

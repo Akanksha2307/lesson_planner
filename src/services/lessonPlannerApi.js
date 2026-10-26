@@ -12,7 +12,7 @@ const pick =
     USE_MOCK ? mockFn(...args) : realFn(...args);
 
 export const lessonPlannerApi = {
-    // Login → { token, user }
+  // Login → { token, user }
   login: pick(mock.login, (body) => http.post('/auth/login', body)),
   // Masters (classes, sections, subjects, staff, timetable, holidays, exams, templates, settings)
   getMasters: pick(mock.getMasters, () => http.get(`${base}/masters`)),
@@ -24,7 +24,9 @@ export const lessonPlannerApi = {
   // Plans
   getPlans: pick(mock.getPlans, (p) => http.get(`${base}/plans`, { params: p })),
   getPlan: pick(mock.getPlan, (id) => http.get(`${base}/plans/${id}`)),
+  // `by` = the logged-in user; only the in-browser mock needs it (the server reads the login token)
   generatePlan: pick(mock.generatePlan, (body) => http.post(`${base}/plans/generate`, body)),
+  previewPlan: pick(mock.previewPlan, (body) => http.post(`${base}/plans/preview`, body)),
   deletePlan: pick(mock.deletePlan, (id) => http.delete(`${base}/plans/${id}`)),
   extendPlan: pick(mock.extendPlan, (id, body) => http.post(`${base}/plans/${id}/extend`, body)),
   submitPlan: pick(mock.submitPlan, (id) => http.post(`${base}/plans/${id}/submit`)),
@@ -32,7 +34,7 @@ export const lessonPlannerApi = {
 
   // Plan items (one per period)
   updateItem: pick(mock.updateItem, (id, body) => http.patch(`${base}/plan-items/${id}`, body)),
-  swapItems: pick(mock.swapItems, (a, b) => http.post(`${base}/plan-items/swap`, { a, b })),
+  swapItems: pick(mock.swapItems, (a, b) => http.post(`${base}/plan-items/swap`, { firstItemId: a, secondItemId: b })),
   completeItem: pick(mock.completeItem, (id, body) => http.post(`${base}/plan-items/${id}/complete`, body)),
   rescheduleItem: pick(mock.rescheduleItem, (id, body) => http.post(`${base}/plan-items/${id}/reschedule`, body)),
   cancelItem: pick(mock.cancelItem, (id, body) => http.post(`${base}/plan-items/${id}/cancel`, body)),
@@ -52,55 +54,32 @@ export const lessonPlannerApi = {
   getCoverage: pick(mock.getCoverage, (p) => http.get(`${base}/reports/coverage`, { params: p })),
   getTeacherReport: pick(mock.getTeacherReport, () => http.get(`${base}/reports/teachers`)),
 
-// Holidays
-getHolidays: pick(
-  mock.getHolidays,
-  () => http.get(`${base}/holidays`)
-),
+  // Holidays
+  getHolidays: pick(mock.getHolidays, () => http.get(`${base}/holidays`)),
 
-saveHoliday: pick(
-  mock.saveHoliday,
-  (body) => {
+  saveHoliday: pick(mock.saveHoliday, (body) => {
     const id = body.id || body._id;
 
-    return id
-      ? http.put(`${base}/holidays/${id}`, body)
-      : http.post(`${base}/holidays`, body);
-  }
-),
+    return id ? http.put(`${base}/holidays/${id}`, body) : http.post(`${base}/holidays`, body);
+  }),
 
-deleteHoliday: pick(
-  mock.deleteHoliday,
-  (id) => http.delete(`${base}/holidays/${id}`)
-),
+  deleteHoliday: pick(mock.deleteHoliday, (id) => http.delete(`${base}/holidays/${id}`)),
 
-getHolidayImpact: pick(
-  mock.getHolidayImpact,
-  (date) => http.get(`${base}/holidays/impact`, {
-    params: { date }
-  })
-),
+  getHolidayImpact: pick(mock.getHolidayImpact, (date) =>
+    http.get(`${base}/holidays/impact`, {
+      params: { date },
+    }),
+  ),
 
-// Examinations
-getExams: pick(
-  mock.getExams,
-  () => http.get(`${base}/exams`)
-),
+  // Examinations
+  getExams: pick(mock.getExams, () => http.get(`${base}/exams`)),
 
-saveExam: pick(
-  mock.saveExam,
-  (body) => {
+  saveExam: pick(mock.saveExam, (body) => {
     const id = body.id || body._id;
 
-    return id
-      ? http.put(`${base}/exams/${id}`, body)
-      : http.post(`${base}/exams`, body);
-  }
-),
-deleteExam: pick(
-  mock.deleteExam,
-  (id) => http.delete(`${base}/exams/${id}`)
-),
+    return id ? http.put(`${base}/exams/${id}`, body) : http.post(`${base}/exams`, body);
+  }),
+  deleteExam: pick(mock.deleteExam, (id) => http.delete(`${base}/exams/${id}`)),
 
   // Notifications
   getNotifications: pick(mock.getNotifications, (p) => http.get(`${base}/notifications`, { params: p })),
