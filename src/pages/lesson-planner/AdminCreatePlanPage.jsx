@@ -474,7 +474,7 @@ export default function AdminCreatePlanPage() {
           )}
         </Card>
 
-        <div className="grid-2" style={{ gap: 20 }}>
+        <div className="stack" style={{ gap: 20 }}>
           <Card title="4. Dates">
             <div className="stack" style={{ gap: 12 }}>
               <Segmented
